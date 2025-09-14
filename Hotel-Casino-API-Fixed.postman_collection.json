@@ -1,0 +1,244 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Hotel & Casino API - TFU2",
+    "description": "Colección de requests para probar las tácticas de arquitectura implementadas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345678"
+  },
+  "item": [
+    {
+      "name": "1. Sistema",
+      "item": [
+        {
+          "name": "Info de la API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": ["{{base_url}}"]
+            },
+            "description": "Obtener información general de la API"
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Deferred Binding - API v1 (PostgreSQL)",
+      "item": [
+        {
+          "name": "GET Reservas PostgreSQL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_v1}}/bookings",
+              "host": ["{{api_v1}}"],
+              "path": ["bookings"]
+            },
+            "description": "Debe mostrar datos de PostgreSQL"
+          }
+        },
+        {
+          "name": "POST Nueva Reserva PostgreSQL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Ana López\",\n  \"room_number\": 102,\n  \"check_in\": \"2025-09-25\",\n  \"check_out\": \"2025-09-27\",\n  \"total_price\": 300.00\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_v1}}/bookings",
+              "host": ["{{api_v1}}"],
+              "path": ["bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Deferred Binding - API v2 (Mock)",
+      "item": [
+        {
+          "name": "GET Reservas Mock",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{api_v2}}/bookings",
+              "host": ["{{api_v2}}"],
+              "path": ["bookings"]
+            },
+            "description": "Debe mostrar datos simulados (Mock)"
+          }
+        },
+        {
+          "name": "POST Nueva Reserva Mock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Usuario Mock\",\n  \"room_number\": 999,\n  \"check_in\": \"2025-12-01\",\n  \"check_out\": \"2025-12-03\",\n  \"total_price\": 500.00\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_v2}}/bookings",
+              "host": ["{{api_v2}}"],
+              "path": ["bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Rollback Testing",
+      "item": [
+        {
+          "name": "nginx Load Balancer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{nginx_lb}}/bookings",
+              "host": ["{{nginx_lb}}"],
+              "path": ["bookings"]
+            },
+            "description": "Tráfico a través del load balancer (cambia según configuración nginx)"
+          }
+        },
+        {
+          "name": "Acceso Directo v1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/bookings",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["bookings"]
+            }
+          }
+        },
+        {
+          "name": "Acceso Directo v2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/bookings",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Validación",
+      "item": [
+        {
+          "name": "Datos Inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"\",\n  \"room_number\": -1,\n  \"check_in\": \"fecha_invalida\",\n  \"total_price\": -100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["bookings"]
+            },
+            "description": "Debe retornar error HTTP 400"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "api_v1",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "api_v2",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "nginx_lb",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}

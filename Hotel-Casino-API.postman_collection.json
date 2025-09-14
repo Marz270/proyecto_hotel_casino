@@ -112,30 +112,30 @@
       "description": "Requests para verificar las diferentes versiones durante el rollback",
       "item": [
         {
-          "name": "API Principal (Puerto 3000)",
+          "name": "nginx Load Balancer (Puerto 8080)",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:3000",
-            "description": "Tráfico principal - cambia entre v1 y v2 según configuración nginx"
+            "url": "http://localhost:8080/bookings",
+            "description": "Tráfico a través del load balancer - cambia entre v1 y v2 según configuración nginx"
           }
         },
         {
-          "name": "API v1 (Puerto 3001)",
+          "name": "API v1 Directo (Puerto 3000)",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:3001",
-            "description": "Acceso directo a v1 - siempre debe mostrar version: 1.0.0"
+            "url": "http://localhost:3000/bookings",
+            "description": "Acceso directo a v1 - PostgreSQL mode"
           }
         },
         {
-          "name": "API v2 (Puerto 3002)",
+          "name": "API v2 Directo (Puerto 3001)",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "http://localhost:3002",
-            "description": "Acceso directo a v2 - debe mostrar version: 2.0.0 (si está activa)"
+            "url": "http://localhost:3001/bookings",
+            "description": "Acceso directo a v2 - Mock mode"
           }
         }
       ]
@@ -181,11 +181,15 @@
     },
     {
       "key": "api_v1",
-      "value": "http://localhost:3001"
+      "value": "http://localhost:3000"
     },
     {
       "key": "api_v2",
-      "value": "http://localhost:3002"
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "nginx_lb",
+      "value": "http://localhost:8080"
     }
   ]
 }
