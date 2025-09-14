@@ -1,0 +1,191 @@
+{
+  "info": {
+    "name": "Hotel & Casino API - TFU2",
+    "description": "Colección de requests para probar las tácticas de arquitectura implementadas",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Sistema",
+      "item": [
+        {
+          "name": "Info de la API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000",
+            "description": "Obtener información general de la API, incluyendo versión y modo de booking"
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings - PostgreSQL Mode",
+      "description": "Requests para probar el modo PostgreSQL (BOOKING_MODE=pg)",
+      "item": [
+        {
+          "name": "Obtener todas las reservas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/bookings",
+            "description": "Obtiene todas las reservas. Debe mostrar 'source': 'PostgreSQL'"
+          }
+        },
+        {
+          "name": "Crear nueva reserva",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Ana López\",\n  \"room_number\": 102,\n  \"check_in\": \"2025-09-25\", \n  \"check_out\": \"2025-09-27\",\n  \"total_price\": 300.00\n}"
+            },
+            "url": "http://localhost:3000/bookings"
+          }
+        },
+        {
+          "name": "Obtener reserva por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/bookings/1"
+          }
+        },
+        {
+          "name": "Eliminar reserva",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "http://localhost:3000/bookings/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings - Mock Mode",
+      "description": "Requests para probar el modo Mock (BOOKING_MODE=mock)",
+      "item": [
+        {
+          "name": "Obtener reservas (Mock)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/bookings",
+            "description": "Debe mostrar 'source': 'Mock Service' con datos simulados"
+          }
+        },
+        {
+          "name": "Crear reserva (Mock)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"Usuario Mock\",\n  \"room_number\": 999,\n  \"check_in\": \"2025-12-01\",\n  \"check_out\": \"2025-12-03\", \n  \"total_price\": 500.00\n}"
+            },
+            "url": "http://localhost:3000/bookings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rollback Testing",
+      "description": "Requests para verificar las diferentes versiones durante el rollback",
+      "item": [
+        {
+          "name": "API Principal (Puerto 3000)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000",
+            "description": "Tráfico principal - cambia entre v1 y v2 según configuración nginx"
+          }
+        },
+        {
+          "name": "API v1 (Puerto 3001)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3001",
+            "description": "Acceso directo a v1 - siempre debe mostrar version: 1.0.0"
+          }
+        },
+        {
+          "name": "API v2 (Puerto 3002)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3002",
+            "description": "Acceso directo a v2 - debe mostrar version: 2.0.0 (si está activa)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validación de Inputs",
+      "description": "Requests para probar la validación de datos de entrada",
+      "item": [
+        {
+          "name": "Reserva con datos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_name\": \"\",\n  \"room_number\": -1,\n  \"check_in\": \"fecha_invalida\",\n  \"total_price\": -100\n}"
+            },
+            "url": "http://localhost:3000/bookings",
+            "description": "Debe retornar errores de validación HTTP 400"
+          }
+        },
+        {
+          "name": "ID inválido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://localhost:3000/bookings/abc",
+            "description": "Debe retornar error de validación para ID no numérico"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "api_v1",
+      "value": "http://localhost:3001"
+    },
+    {
+      "key": "api_v2",
+      "value": "http://localhost:3002"
+    }
+  ]
+}

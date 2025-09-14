@@ -1,0 +1,61 @@
+-- Inicialización de base de datos para Hotel & Casino
+-- Este script se ejecuta automáticamente al iniciar el contenedor PostgreSQL
+
+\echo 'Creando base de datos para Salto Hotel & Casino...'
+
+-- Crear tabla de reservas
+CREATE TABLE IF NOT EXISTS bookings (
+    id SERIAL PRIMARY KEY,
+    client_name VARCHAR(255) NOT NULL,
+    room_number INTEGER NOT NULL,
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    total_price DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Crear tabla de habitaciones (para futuros endpoints)
+CREATE TABLE IF NOT EXISTS rooms (
+    id SERIAL PRIMARY KEY,
+    room_number INTEGER UNIQUE NOT NULL,
+    room_type VARCHAR(100) NOT NULL,
+    price_per_night DECIMAL(10,2) NOT NULL,
+    is_available BOOLEAN DEFAULT TRUE,
+    max_guests INTEGER DEFAULT 2
+);
+
+-- Crear tabla de clientes (para futuros endpoints)
+CREATE TABLE IF NOT EXISTS clients (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insertar datos de ejemplo para habitaciones
+INSERT INTO rooms (room_number, room_type, price_per_night, max_guests) VALUES
+(101, 'Standard', 150.00, 2),
+(102, 'Standard', 150.00, 2),
+(201, 'Deluxe', 250.00, 3),
+(202, 'Deluxe', 250.00, 3),
+(301, 'Suite', 400.00, 4),
+(302, 'Suite', 400.00, 4)
+ON CONFLICT (room_number) DO NOTHING;
+
+-- Insertar datos de ejemplo para clientes
+INSERT INTO clients (name, email, phone) VALUES
+('Juan Pérez', 'juan.perez@email.com', '+595981123456'),
+('María González', 'maria.gonzalez@email.com', '+595981234567'),
+('Carlos Rodríguez', 'carlos.rodriguez@email.com', '+595981345678')
+ON CONFLICT (email) DO NOTHING;
+
+-- Insertar datos de ejemplo para reservas
+INSERT INTO bookings (client_name, room_number, check_in, check_out, total_price) VALUES
+('Juan Pérez', 101, '2025-09-15', '2025-09-17', 300.00),
+('María González', 201, '2025-09-20', '2025-09-23', 750.00),
+('Carlos Rodríguez', 301, '2025-10-01', '2025-10-03', 800.00)
+ON CONFLICT DO NOTHING;
+
+\echo 'Base de datos inicializada correctamente ✅'
