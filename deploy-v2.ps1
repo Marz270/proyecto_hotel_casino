@@ -30,6 +30,14 @@ try {
 Write-Log "PASO 2: Desplegando backend_v2 (nueva version)..."
 docker-compose --profile v2 up -d backend_v2
 
+# PASO 3: Configurar nginx para v2
+Write-Log "PASO 3: Configurando nginx para usar v2..."
+Copy-Item -Path "./nginx/nginx.rollback.conf" -Destination "./nginx/nginx.conf" -Force
+
+# PASO 4: Reiniciar nginx
+Write-Log "PASO 4: Reiniciando nginx con nueva configuracion..."
+docker restart hotel_nginx
+
 # PASO 3: Esperar que v2 este lista
 Write-Log "PASO 3: Esperando que backend_v2 este lista en localhost:3001..."
 Start-Sleep -Seconds 15

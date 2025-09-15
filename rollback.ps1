@@ -22,13 +22,21 @@ Write-Log "PASO 1: Evaluando estado actual del sistema..."
 Write-Host "   Estado de contenedores:" -ForegroundColor Cyan
 docker-compose ps
 
-# PASO 2: Detener backend_v2
-Write-Log "PASO 2: Deteniendo backend_v2 (nueva version)..."
+# PASO 2: Configurar nginx de vuelta a v1
+Write-Log "PASO 2: Configurando nginx de vuelta a v1..."
+Copy-Item -Path "./nginx/nginx.v1.conf" -Destination "./nginx/nginx.conf" -Force
+
+# PASO 3: Reiniciar nginx
+Write-Log "PASO 3: Reiniciando nginx..."
+docker restart hotel_nginx
+
+# PASO 4: Detener backend_v2
+Write-Log "PASO 4: Deteniendo backend_v2 (nueva version)..."
 docker-compose stop backend_v2
 docker-compose rm -f backend_v2
 
-# PASO 3: Verificar backend_v1
-Write-Log "PASO 3: Verificando que backend_v1 (estable) este activo..."
+# PASO 5: Verificar backend_v1
+Write-Log "PASO 5: Verificando que backend_v1 (estable) este activo..."
 Start-Sleep -Seconds 5
 
 try {

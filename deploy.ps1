@@ -71,8 +71,12 @@ Write-Log "Base de datos lista!"
 Write-Log "PASO 3: Desplegando backend_v1 (version estable)..."
 docker-compose up -d backend_v1
 
-# PASO 4: Verificar que responda
-Write-Log "PASO 4: Verificando que backend_v1 responda..."
+# PASO 4: Iniciar nginx load balancer
+Write-Log "PASO 4: Desplegando nginx load balancer..."
+docker-compose up -d nginx
+
+# PASO 5: Verificar que responda
+Write-Log "PASO 5: Verificando que backend_v1 responda..."
 Start-Sleep -Seconds 10
 $counter = 0
 do {
@@ -96,14 +100,16 @@ Write-Log "backend_v1 desplegado exitosamente!"
 Write-Host ""
 Write-Host "=== DESPLIEGUE COMPLETADO EXITOSAMENTE ===" -ForegroundColor Green
 Write-Host "Informacion del despliegue:" -ForegroundColor Cyan
-Write-Host "   API v1 (estable): http://localhost:3000" -ForegroundColor White
+Write-Host "   nginx Load Balancer: http://localhost:8080" -ForegroundColor White
+Write-Host "   API v1 (directo): http://localhost:3000" -ForegroundColor White
 Write-Host "   Base de datos: localhost:5432" -ForegroundColor White
 $bookingMode = (Get-Content .env | Where-Object {$_ -match 'BOOKING_MODE='}) -replace 'BOOKING_MODE=',''
 Write-Host "   Modo de binding: $bookingMode" -ForegroundColor White
 Write-Host ""
 Write-Host "Comandos utiles:" -ForegroundColor Cyan
-Write-Host "   Probar API:          curl http://localhost:3000" -ForegroundColor White
-Write-Host "   Ver reservas:        curl http://localhost:3000/bookings" -ForegroundColor White
+Write-Host "   Probar nginx:        curl http://localhost:8080" -ForegroundColor White
+Write-Host "   Probar API directa:  curl http://localhost:3000" -ForegroundColor White
+Write-Host "   Ver reservas:        curl http://localhost:8080/bookings" -ForegroundColor White
 Write-Host "   Desplegar v2:        .\deploy-v2.ps1" -ForegroundColor White
 Write-Host "   Ver logs:            docker-compose logs -f backend_v1" -ForegroundColor White
 Write-Host "   Cambiar a mock:      Editar .env -> BOOKING_MODE=mock" -ForegroundColor White
