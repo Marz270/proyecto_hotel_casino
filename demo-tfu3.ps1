@@ -1,46 +1,76 @@
 # Scripts de Demostracion TFU3
 # Sistema de Reservas Salto Hotel & Casino
 
-Write-Host "Iniciando Demo Completa TFU3 - Salto Hotel & Casino" -ForegroundColor Cyan                 Write-H        Write-Host "   Habitaciones totales: $($occupancy.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Habitaciones ocupadas: $($occupancy.occupied_rooms)" -ForegroundColor Gray
-        Write-Host "   Tasa de ocupacion: $($occupancy.occupancy_rate)%" -ForegroundColor Gray "RESUMEN GENERAL:" -ForegroundColor Cyan
-        Write-Host "   Total de reservas: $($summary.total_reservations)" -ForegroundColor Gray
-        Write-Host "   Total de habitaciones: $($summary.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Valor promedio por reserva: `$$([math]::Round($summary.avg_booking_value, 2))" -ForegroundColor Grayrite-H        Write-Host "   Habitaciones totales: $($occupancy.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Habitaciones ocupadas: $($occupancy.occupied_rooms)" -ForegroundColor Gray
-        Write-Host "   Tasa de ocupacion: $($occupancy.occupancy_rate)%" -ForegroundColor Gray "RESUMEN GENERAL:" -ForegroundColor Cyan
-        Write-Host "   Total de reservas: $($summary.total_reservations)" -ForegroundColor Gray
-        Write-Host "   Total de habitaciones: $($summary.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Valor promedio por reserva: `$$([math]::Round($summary.avg_booking_value, 2))" -ForegroundColor GrayWrite-        Write-Host "   Habitaciones totales: $($occupancy.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Habitaciones ocupadas: $($occupancy.occupied_rooms)" -ForegroundColor Gray
-        Write-Host "   Tasa de ocupacion: $($occupancy.occupancy_rate)%" -ForegroundColor Grayt "RESUMEN GENERAL:" -ForegroundColor Cyan
-        Write-Host "   Total de reservas: $($summary.total_reservations)" -ForegroundColor Gray
-        Write-Host "   Total de habitaciones: $($summary.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Valor promedio por reserva: `$$([math]::Round($summary.avg_booking_value, 2))" -ForegroundColor Grayite-Host "================================================================" -ForegroundColor Cyan
+Write-Host "Iniciando Demo Completa TFU3 - Salto Hotel & Casino" -ForegroundColor Cyan
+Write-Host "================================================================" -ForegroundColor Cyan
 
-# Variables de configuración
+# Variables de configuracion
 $API_BASE = "http://localhost:3000"
 $FRONTEND_URL = "http://localhost:4200"
 
-# Funcion para hacer peticiones HTTP
+# Funcion para hacer llamadas a la API
 function Invoke-ApiCall {
     param(
-        [string]$Method = "GET",
         [string]$Url,
-        [string]$Body = $null,
-        [hashtable]$Headers = @{"Content-Type" = "application/json"}
+        [string]$Method = "GET",
+        [hashtable]$Body = @{}
     )
     
     try {
-        if ($Body) {
-            $response = Invoke-RestMethod -Uri $Url -Method $Method -Body $Body -Headers $Headers
-        } else {
-            $response = Invoke-RestMethod -Uri $Url -Method $Method -Headers $Headers
+        $params = @{
+            Uri = $Url
+            Method = $Method
+            Headers = @{
+                "Content-Type" = "application/json"
+            }
         }
+        
+        if ($Method -ne "GET" -and $Body.Count -gt 0) {
+            $params.Body = $Body | ConvertTo-Json
+        }
+        
+        $response = Invoke-RestMethod @params
         return $response
-    } catch {
+    }
+    catch {
         Write-Host "Error en API call: $($_.Exception.Message)" -ForegroundColor Red
         return $null
+    }
+}
+
+# Funcion para iniciar los servicios con Docker Compose
+function Start-Services {
+    Write-Host "Iniciando servicios con Docker Compose..." -ForegroundColor Yellow
+    
+    try {
+        # Verificar si Docker esta corriendo
+        docker --version | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "Error: Docker no esta disponible" -ForegroundColor Red
+            return $false
+        }
+        
+        # Detener servicios existentes
+        Write-Host "Deteniendo servicios existentes..." -ForegroundColor Gray
+        docker-compose down 2>$null
+        
+        # Iniciar servicios
+        Write-Host "Iniciando servicios..." -ForegroundColor Gray
+        $process = Start-Process -FilePath "docker-compose" -ArgumentList "up", "-d" -PassThru -WindowStyle Hidden
+        $process.WaitForExit(30000)  # Esperar hasta 30 segundos
+        
+        if ($process.ExitCode -eq 0) {
+            Write-Host "Servicios iniciados correctamente" -ForegroundColor Green
+            Start-Sleep -Seconds 10  # Dar tiempo para que los servicios se levanten
+            return $true
+        } else {
+            Write-Host "Error al iniciar servicios" -ForegroundColor Red
+            return $false
+        }
+    }
+    catch {
+        Write-Host "Error al iniciar servicios: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
     }
 }
 
@@ -48,27 +78,58 @@ Write-Host ""
 Write-Host "1. Verificando Estado del Sistema" -ForegroundColor Yellow
 Write-Host "-------------------------------------------"
 
-# Verificar API Backend
+# Verificar si los servicios estan corriendo, si no, intentar iniciarlos
+$backendReady = $false
+$frontendReady = $false
+
+# Verificar backend
 try {
-    $apiInfo = Invoke-ApiCall -Url "$API_BASE/"
-    if ($apiInfo) {
+    $health = Invoke-ApiCall -Url "$API_BASE/"
+    if ($health) {
         Write-Host "Backend API: CONECTADO" -ForegroundColor Green
-        Write-Host "   Version: $($apiInfo.version)" -ForegroundColor Gray
-        Write-Host "   Modo: $($apiInfo.booking_mode)" -ForegroundColor Gray
+        Write-Host "   Version: $($health.version)" -ForegroundColor Gray
+        Write-Host "   Modo: $($health.mode)" -ForegroundColor Gray
+        $backendReady = $true
     }
-} catch {
-    Write-Host "Backend API: DESCONECTADO" -ForegroundColor Red
-    Write-Host "   Asegurate de ejecutar: docker-compose up -d" -ForegroundColor Yellow
-    exit 1
+}
+catch {
+    Write-Host "Backend API: NO DISPONIBLE" -ForegroundColor Red
 }
 
-# Verificar Frontend
+# Verificar frontend
 try {
-    Invoke-WebRequest -Uri $FRONTEND_URL -Method Head -TimeoutSec 5 | Out-Null
-    Write-Host "Frontend Angular: DISPONIBLE en $FRONTEND_URL" -ForegroundColor Green
-} catch {
-    Write-Host "Frontend Angular: NO DISPONIBLE" -ForegroundColor Yellow
+    $frontendResponse = Invoke-WebRequest -Uri $FRONTEND_URL -TimeoutSec 5 -ErrorAction Stop
+    Write-Host "Frontend Angular: CONECTADO" -ForegroundColor Green
+    $frontendReady = $true
+}
+catch {
+    Write-Host "Frontend Angular: NO DISPONIBLE" -ForegroundColor Red
     Write-Host "   El frontend estara disponible una vez que Angular compile" -ForegroundColor Gray
+}
+
+# Si los servicios no estan listos, intentar iniciarlos
+if (-not $backendReady -or -not $frontendReady) {
+    Write-Host ""
+    Write-Host "Intentando iniciar servicios..." -ForegroundColor Yellow
+    
+    if (Start-Services) {
+        # Reintentar verificacion
+        Start-Sleep -Seconds 15
+        
+        try {
+            $health = Invoke-ApiCall -Url "$API_BASE/"
+            if ($health) {
+                Write-Host "Backend API: CONECTADO (reinicio exitoso)" -ForegroundColor Green
+                $backendReady = $true
+            }
+        }
+        catch {
+            Write-Host "Backend API: AUN NO DISPONIBLE" -ForegroundColor Red
+        }
+        
+        Write-Host "Frontend Angular: INICIANDO..." -ForegroundColor Yellow
+        Write-Host "   URL: $FRONTEND_URL (disponible en ~2-3 minutos)" -ForegroundColor Gray
+    }
 }
 
 Write-Host ""
@@ -84,38 +145,38 @@ if ($rooms -and $rooms.data) {
         $statusColor = if ($room.available) { "Green" } else { "Red" }
         
         Write-Host "   Habitacion $($room.room_number) - $($room.room_type)" -ForegroundColor Cyan
-        Write-Host "      Precio: `$$($room.price_per_night)/noche" -ForegroundColor Gray
+        Write-Host "      Precio: $($room.price_per_night)/noche" -ForegroundColor Gray
         Write-Host "      Huespedes: $($room.max_guests)" -ForegroundColor Gray
         Write-Host "      Estado: $status" -ForegroundColor $statusColor
         Write-Host ""
     }
 }
 
+Write-Host ""
 Write-Host "3. Demo - Crear Nueva Reserva" -ForegroundColor Yellow
 Write-Host "-------------------------------------------"
+Write-Host "Creando reserva de ejemplo..." -ForegroundColor Cyan
 
-# Datos de ejemplo para nueva reserva
-$newReservation = @{
-    client_name = "Demo TFU3 - Juan Pérez"
-    room_number = 102
+$reservationData = @{
+    client_name = "Demo TFU3 - Juan Perez"
+    client_email = "juan.perez@email.com"
+    room_number = "102"
     check_in = "2025-12-15"
     check_out = "2025-12-17"
     total_price = 300.00
-} | ConvertTo-Json
+}
 
-Write-Host "Creando reserva de ejemplo..." -ForegroundColor Cyan
-Write-Host "   Cliente: Demo TFU3 - Juan Pérez" -ForegroundColor Gray
-Write-Host "   Habitación: 102" -ForegroundColor Gray
-Write-Host "   Check-in: 2025-12-15" -ForegroundColor Gray
-Write-Host "   Check-out: 2025-12-17" -ForegroundColor Gray
-Write-Host "   Total: `$300.00" -ForegroundColor Gray
+Write-Host "   Cliente: $($reservationData.client_name)" -ForegroundColor Gray
+Write-Host "   Habitacion: $($reservationData.room_number)" -ForegroundColor Gray
+Write-Host "   Check-in: $($reservationData.check_in)" -ForegroundColor Gray
+Write-Host "   Check-out: $($reservationData.check_out)" -ForegroundColor Gray
+Write-Host "   Total: $($reservationData.total_price)" -ForegroundColor Gray
 
-$createResult = Invoke-ApiCall -Method "POST" -Url "$API_BASE/reservations" -Body $newReservation
-
-if ($createResult -and $createResult.success) {
+$newReservation = Invoke-ApiCall -Url "$API_BASE/reservations" -Method "POST" -Body $reservationData
+if ($newReservation) {
     Write-Host "Reserva creada exitosamente!" -ForegroundColor Green
-    Write-Host "   ID de reserva: $($createResult.data.id)" -ForegroundColor Gray
-    $reservationId = $createResult.data.id
+    Write-Host "   ID de reserva: $($newReservation.id)" -ForegroundColor Cyan
+    $reservationId = $newReservation.id
 } else {
     Write-Host "Error al crear reserva" -ForegroundColor Red
 }
@@ -131,34 +192,34 @@ if ($reservations -and $reservations.data) {
     
     foreach ($reservation in $reservations.data) {
         Write-Host "   Reserva #$($reservation.id)" -ForegroundColor Cyan
-        Write-Host "      👤 Cliente: $($reservation.client_name)" -ForegroundColor Gray
+        Write-Host "      Cliente: $($reservation.client_name)" -ForegroundColor Gray
         Write-Host "      Habitacion: $($reservation.room_number)" -ForegroundColor Gray
         Write-Host "      Check-in: $($reservation.check_in)" -ForegroundColor Gray
         Write-Host "      Check-out: $($reservation.check_out)" -ForegroundColor Gray
-        Write-Host "      Total: `$$($reservation.total_price)" -ForegroundColor Gray
+        Write-Host "      Total: $($reservation.total_price)" -ForegroundColor Gray
         Write-Host ""
     }
 }
 
+Write-Host ""
 Write-Host "5. Demo - Simulacion de Pago" -ForegroundColor Yellow
 Write-Host "-------------------------------------------"
 
 if ($reservationId) {
+    Write-Host "Procesando pago para reserva #$reservationId..." -ForegroundColor Cyan
+    
     $paymentData = @{
         reservation_id = $reservationId
         amount = 300.00
         payment_method = "credit_card"
-    } | ConvertTo-Json
+        card_number = "**** **** **** 1234"
+    }
     
-    Write-Host "Procesando pago para reserva #$reservationId..." -ForegroundColor Cyan
-    
-    $paymentResult = Invoke-ApiCall -Method "POST" -Url "$API_BASE/payments" -Body $paymentData
-    
-    if ($paymentResult -and $paymentResult.success) {
+    $payment = Invoke-ApiCall -Url "$API_BASE/payments" -Method "POST" -Body $paymentData
+    if ($payment) {
         Write-Host "Pago procesado exitosamente!" -ForegroundColor Green
-        Write-Host "   ID de transacción: $($paymentResult.data.transaction_id)" -ForegroundColor Gray
-        Write-Host "   Estado: $($paymentResult.data.status)" -ForegroundColor Gray
-        Write-Host "   Método: $($paymentResult.data.payment_method)" -ForegroundColor Gray
+        Write-Host "   ID de transaccion: $($payment.transaction_id)" -ForegroundColor Cyan
+        Write-Host "   Estado: $($payment.status)" -ForegroundColor Green
     } else {
         Write-Host "Error al procesar pago" -ForegroundColor Red
     }
@@ -179,11 +240,11 @@ if ($reports -and $reports.data) {
         Write-Host "RESUMEN GENERAL:" -ForegroundColor Cyan
         Write-Host "   Total de reservas: $($summary.total_bookings)" -ForegroundColor Gray
         Write-Host "   Total de habitaciones: $($summary.total_rooms)" -ForegroundColor Gray
-        Write-Host "   Valor promedio por reserva: `$$([math]::Round($summary.avg_booking_value, 2))" -ForegroundColor Gray
+        Write-Host "   Valor promedio por reserva: $([math]::Round($summary.avg_booking_value, 2))" -ForegroundColor Gray
         Write-Host "   Reservas ultimos 30 dias: $($summary.bookings_last_month)" -ForegroundColor Gray
     }
     
-    # Reporte de ocupación
+    # Reporte de ocupacion
     if ($reports.data.occupancy) {
         $occupancy = $reports.data.occupancy
         Write-Host ""
@@ -193,8 +254,8 @@ if ($reports -and $reports.data) {
         Write-Host "   Tasa de ocupacion: $($occupancy.occupancy_rate)%" -ForegroundColor Gray
     }
     
-    # Reporte de ingresos
-    if ($reports.data.revenue -and $reports.data.revenue.Count -gt 0) {
+    # Ingresos mensuales
+    if ($reports.data.revenue) {
         Write-Host ""
         Write-Host "INGRESOS POR MES:" -ForegroundColor Cyan
         foreach ($revenue in $reports.data.revenue) {
@@ -208,46 +269,31 @@ Write-Host ""
 Write-Host "7. Demo - Tacticas de Arquitectura" -ForegroundColor Yellow
 Write-Host "-------------------------------------------"
 
-Write-Host "🔗 DIFERIR BINDING (Cambio de implementación):" -ForegroundColor Cyan
-Write-Host "   Actual: $($apiInfo.booking_mode)" -ForegroundColor Gray
-Write-Host "   Para cambiar a modo Mock: " -ForegroundColor Gray
-Write-Host "   1. Editar archivo .env: BOOKING_MODE=mock" -ForegroundColor Yellow
-Write-Host "   2. Ejecutar: docker-compose restart backend_v1" -ForegroundColor Yellow
-Write-Host "   3. La API cambiará de PostgreSQL a datos simulados" -ForegroundColor Yellow
-
+Write-Host "DIFERIR BINDING (Cambio de implementacion):" -ForegroundColor Cyan
+Write-Host "   1. Patron Factory para BookingService" -ForegroundColor White
+Write-Host "   2. Configuracion externa via variables de entorno" -ForegroundColor White
+Write-Host "   3. Inyeccion de dependencias en tiempo de ejecucion" -ForegroundColor White
 Write-Host ""
+
 Write-Host "ROLLBACK (Facilidad de despliegue):" -ForegroundColor Cyan
-Write-Host "   Para demostrar rollback:" -ForegroundColor Gray
-Write-Host "   1. Desplegar v2: .\deploy-v2.ps1" -ForegroundColor Yellow
-Write-Host "   2. Probar nueva versión en puerto 3001" -ForegroundColor Yellow
-Write-Host "   3. Ejecutar rollback: .\rollback.ps1" -ForegroundColor Yellow
-Write-Host "   4. Sistema vuelve a v1 sin pérdida de datos" -ForegroundColor Yellow
-
+Write-Host "   1. Contenedorizacion con Docker" -ForegroundColor White
+Write-Host "   2. Versionado de imagenes" -ForegroundColor White
+Write-Host "   3. Scripts automatizados de despliegue y rollback" -ForegroundColor White
 Write-Host ""
+
 Write-Host "8. Demo - Escalado Horizontal" -ForegroundColor Yellow
 Write-Host "-------------------------------------------"
 
-Write-Host "🚀 Para escalar horizontalmente el backend:" -ForegroundColor Cyan
-Write-Host "   docker-compose up --scale backend_v1=3 -d" -ForegroundColor Yellow
-Write-Host ""
 Write-Host "Verificar instancias en ejecucion:" -ForegroundColor Cyan
-Write-Host "   docker-compose ps" -ForegroundColor Yellow
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>$null
 
 Write-Host ""
-Write-Host "🌐 9. Acceso a Interfaces" -ForegroundColor Yellow
-Write-Host "-------------------------------------------"
-
-Write-Host "Frontend Angular: $FRONTEND_URL" -ForegroundColor Green
+Write-Host "Servicios activos:" -ForegroundColor Cyan
 Write-Host "API Backend: $API_BASE" -ForegroundColor Green
+Write-Host "Frontend Angular: $FRONTEND_URL" -ForegroundColor Green
 Write-Host "Load Balancer (Nginx): http://localhost:8080" -ForegroundColor Green
 Write-Host "Base de datos PostgreSQL: localhost:5432" -ForegroundColor Green
 
-Write-Host ""
-Write-Host "📚 10. Colección Postman" -ForegroundColor Yellow
-Write-Host "-------------------------------------------"
-
-Write-Host "📄 Importar en Postman:" -ForegroundColor Cyan
-Write-Host "   Hotel-Casino-API-Fixed.postman_collection.json" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "Endpoints disponibles:" -ForegroundColor Cyan
 Write-Host "   GET    /                 - Info de la API" -ForegroundColor Gray
@@ -271,5 +317,11 @@ Write-Host "4. Mostrar reportes y estadisticas en tiempo real" -ForegroundColor 
 Write-Host "5. Explicar arquitectura de componentes del documento TFU3" -ForegroundColor White
 
 Write-Host ""
-Write-Host "TFU3 - Analisis y Diseno de Aplicaciones 2 - 2025" -ForegroundColor Magenta
+Write-Host "TFU3 - Analisis y Diseno de Aplicaciones II - 2025" -ForegroundColor Magenta
 Write-Host ""
+
+# Abrir automaticamente el frontend en el navegador
+if ($frontendReady -or $backendReady) {
+    Write-Host "Abriendo frontend en el navegador..." -ForegroundColor Yellow
+    Start-Process $FRONTEND_URL
+}
