@@ -85,10 +85,10 @@ $frontendReady = $false
 # Verificar backend
 try {
     $health = Invoke-ApiCall -Url "$API_BASE/"
-    if ($health) {
+    if ($health -and $health.success) {
         Write-Host "Backend API: CONECTADO" -ForegroundColor Green
-        Write-Host "   Version: $($health.version)" -ForegroundColor Gray
-        Write-Host "   Modo: $($health.mode)" -ForegroundColor Gray
+        Write-Host "   Version: $($health.data.version)" -ForegroundColor Gray
+        Write-Host "   Modo: $($health.data.booking_mode)" -ForegroundColor Gray
         $backendReady = $true
     }
 }
@@ -118,7 +118,7 @@ if (-not $backendReady -or -not $frontendReady) {
         
         try {
             $health = Invoke-ApiCall -Url "$API_BASE/"
-            if ($health) {
+            if ($health -and $health.success) {
                 Write-Host "Backend API: CONECTADO (reinicio exitoso)" -ForegroundColor Green
                 $backendReady = $true
             }
@@ -150,6 +150,11 @@ if ($rooms -and $rooms.data) {
         Write-Host "      Estado: $status" -ForegroundColor $statusColor
         Write-Host ""
     }
+} else {
+    Write-Host "No se pudieron obtener las habitaciones" -ForegroundColor Red
+    if ($rooms -and $rooms.error) {
+        Write-Host "   Error: $($rooms.error)" -ForegroundColor Red
+    }
 }
 
 Write-Host ""
@@ -173,12 +178,18 @@ Write-Host "   Check-out: $($reservationData.check_out)" -ForegroundColor Gray
 Write-Host "   Total: $($reservationData.total_price)" -ForegroundColor Gray
 
 $newReservation = Invoke-ApiCall -Url "$API_BASE/reservations" -Method "POST" -Body $reservationData
-if ($newReservation) {
+if ($newReservation -and $newReservation.success) {
     Write-Host "Reserva creada exitosamente!" -ForegroundColor Green
-    Write-Host "   ID de reserva: $($newReservation.id)" -ForegroundColor Cyan
-    $reservationId = $newReservation.id
+    Write-Host "   ID de reserva: $($newReservation.data.id)" -ForegroundColor Cyan
+    $reservationId = $newReservation.data.id
 } else {
     Write-Host "Error al crear reserva" -ForegroundColor Red
+    if ($newReservation -and $newReservation.error) {
+        Write-Host "   Error: $($newReservation.error)" -ForegroundColor Red
+    }
+    if ($newReservation -and $newReservation.details) {
+        Write-Host "   Detalles: $($newReservation.details)" -ForegroundColor Red
+    }
 }
 
 Write-Host ""
@@ -216,12 +227,16 @@ if ($reservationId) {
     }
     
     $payment = Invoke-ApiCall -Url "$API_BASE/payments" -Method "POST" -Body $paymentData
-    if ($payment) {
+    if ($payment -and $payment.success) {
         Write-Host "Pago procesado exitosamente!" -ForegroundColor Green
-        Write-Host "   ID de transaccion: $($payment.transaction_id)" -ForegroundColor Cyan
-        Write-Host "   Estado: $($payment.status)" -ForegroundColor Green
+        Write-Host "   ID de transaccion: $($payment.data.transaction_id)" -ForegroundColor Cyan
+        Write-Host "   Estado: $($payment.data.status)" -ForegroundColor Green
     } else {
         Write-Host "Error al procesar pago" -ForegroundColor Red
+        if ($payment -and $payment.error) {
+            Write-Host "   Error: $($payment.error)" -ForegroundColor Red
+        }
+    }
     }
 }
 
@@ -262,6 +277,11 @@ if ($reports -and $reports.data) {
             $month = [datetime]$revenue.month
             Write-Host "   $($month.ToString('MMMM yyyy')): $($revenue.total_revenue) USD - $($revenue.total_bookings) reservas" -ForegroundColor Gray
         }
+    }
+} else {
+    Write-Host "No se pudieron obtener los reportes" -ForegroundColor Red
+    if ($reports -and $reports.error) {
+        Write-Host "   Error: $($reports.error)" -ForegroundColor Red
     }
 }
 
