@@ -1,233 +1,95 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+import { filter, firstValueFrom } from 'rxjs';
 
-interface Room {
-  id: number;
-  room_number: number;
-  room_type: string;
-  price_per_night: number;
-  max_guests: number;
-  available: boolean;
-}
-
-interface Reservation {
-  id?: number;
-  client_name: string;
-  room_number: number;
-  check_in: string;
-  check_out: string;
-  total_price: number;
-  created_at?: string;
-}
-
-interface Reports {
-  summary?: {
-    total_bookings: number;
-    total_rooms: number;
-    avg_booking_value: number;
-    bookings_last_month: number;
-  };
-  occupancy?: {
-    total_rooms: number;
-    occupied_rooms: number;
-    occupancy_rate: number;
-  };
-  revenue?: Array<{
-    month: string;
-    total_bookings: number;
-    total_revenue: number;
-  }>;
-}
+import { HttpService } from './services/http-service';
+import { AppStateService } from './services/app-state-service';
+import { ApiInfo } from './models/api.model';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule, FormsModule, HttpClientModule],
+  standalone: true,
+  imports: [RouterOutlet, CommonModule, HttpClientModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App implements OnInit {
-  private http = inject(HttpClient);
+  private readonly httpService = inject(HttpService);
+  private readonly router = inject(Router);
+  protected readonly appState = inject(AppStateService);
+
   protected readonly title = signal('Hotel & Casino');
+  protected readonly currentRoute = signal('habitaciones');
 
-  // API Configuration
-  private readonly API_BASE_URL = 'http://localhost:3000';
+  // Configuración de navegación
+  protected readonly navItems = [
+    {
+      path: '/habitaciones',
+      label: '🏠 Habitaciones',
+      description: 'Consultar disponibilidad',
+    },
+    {
+      path: '/reservas',
+      label: '📅 Reservas',
+      description: 'Gestionar reservas',
+    },
+    {
+      path: '/reportes',
+      label: '📊 Reportes',
+      description: 'Estadísticas y análisis',
+    },
+  ];
 
-  // State
-  activeTab = 'rooms';
-  loading = false;
-  error = '';
-  apiStatus = 'connecting...';
+  async ngOnInit() {
+    await this.checkApiStatus();
+    this.setupRouteTracking();
+  }
 
-  // Data
-  rooms: Room[] = [];
-  reservations: Reservation[] = [];
-  reports: Reports = {};
-
-  // Filters and Forms
-  checkIn = '';
-  checkOut = '';
-  showReservationForm = false;
-  newReservation: Reservation = {
-    client_name: '',
-    room_number: 0,
-    check_in: '',
-    check_out: '',
-    total_price: 0,
-  };
-
-  ngOnInit() {
-    this.checkApiStatus();
-    this.setActiveTab('rooms');
+  private setupRouteTracking() {
+    // Rastrear cambios de ruta para actualizar navegación activa
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        const route = event.urlAfterRedirects.split('/')[1] || 'habitaciones';
+        this.currentRoute.set(route);
+      });
   }
 
   async checkApiStatus() {
     try {
-      const response = await this.http.get<any>(`${this.API_BASE_URL}/`).toPromise();
-      this.apiStatus = `Connected (v${response.version})`;
-    } catch (error) {
-      this.apiStatus = 'Disconnected';
-      this.error = 'Cannot connect to API. Make sure the backend is running.';
-    }
-  }
+      const response = await firstValueFrom(this.httpService.checkApiStatus());
 
-  setActiveTab(tab: string) {
-    this.activeTab = tab;
-    this.clearError();
-
-    switch (tab) {
-      case 'rooms':
-        this.loadRooms();
-        break;
-      case 'reservations':
-        this.loadReservations();
-        break;
-      case 'reports':
-        this.loadReports();
-        break;
-    }
-  }
-
-  async loadRooms() {
-    this.loading = true;
-    try {
-      const params =
-        this.checkIn && this.checkOut ? `?check_in=${this.checkIn}&check_out=${this.checkOut}` : '';
-
-      const response = await this.http.get<any>(`${this.API_BASE_URL}/rooms${params}`).toPromise();
-      this.rooms = response.data || [];
-    } catch (error) {
-      this.handleError('Error loading rooms', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async loadReservations() {
-    this.loading = true;
-    try {
-      const response = await this.http.get<any>(`${this.API_BASE_URL}/bookings`).toPromise();
-      this.reservations = response.data || [];
-    } catch (error) {
-      this.handleError('Error loading reservations', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  async loadReports() {
-    this.loading = true;
-    try {
-      const response = await this.http.get<any>(`${this.API_BASE_URL}/reports`).toPromise();
-      this.reports = response.data || {};
-    } catch (error) {
-      this.handleError('Error loading reports', error);
-    } finally {
-      this.loading = false;
-    }
-  }
-
-  reserveRoom(room: Room) {
-    this.newReservation = {
-      client_name: '',
-      room_number: room.room_number,
-      check_in: this.checkIn || new Date().toISOString().split('T')[0],
-      check_out: this.checkOut || new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      total_price: room.price_per_night,
-    };
-    this.showReservationForm = true;
-    this.setActiveTab('reservations');
-  }
-
-  async createReservation() {
-    this.loading = true;
-    try {
-      const response = await this.http
-        .post<any>(`${this.API_BASE_URL}/reservations`, this.newReservation)
-        .toPromise();
-
-      if (response.success) {
-        this.reservations.unshift(response.data);
-        this.cancelReservation();
-        this.showSuccess('Reservation created successfully!');
+      if (response.success && response.data) {
+        const info = response.data as ApiInfo;
+        this.appState.setApiStatus(`Connected v${info.version} (${info.booking_mode})`);
+        this.appState.clearError();
       } else {
-        this.handleError('Error creating reservation', response.error);
+        throw new Error('API check failed');
       }
     } catch (error) {
-      this.handleError('Error creating reservation', error);
-    } finally {
-      this.loading = false;
+      this.appState.setApiStatus('Disconnected');
+      const errorMessage = error instanceof Error ? error.message : 'Cannot connect to API';
+      this.appState.setError(`${errorMessage}. Make sure the backend is running.`);
+      console.error('API Status Check Error:', error);
     }
   }
 
-  cancelReservation() {
-    this.showReservationForm = false;
-    this.newReservation = {
-      client_name: '',
-      room_number: 0,
-      check_in: '',
-      check_out: '',
-      total_price: 0,
-    };
+  // Navegación programática
+  navigateTo(path: string) {
+    this.router.navigate([path]);
+    this.appState.clearError();
   }
 
-  async deleteReservation(id: number) {
-    if (!confirm('Are you sure you want to delete this reservation?')) {
-      return;
-    }
-
-    this.loading = true;
-    try {
-      const response = await this.http
-        .delete<any>(`${this.API_BASE_URL}/bookings/${id}`)
-        .toPromise();
-
-      if (response.success) {
-        this.reservations = this.reservations.filter((r) => r.id !== id);
-        this.showSuccess('Reservation deleted successfully!');
-      } else {
-        this.handleError('Error deleting reservation', response.error);
-      }
-    } catch (error) {
-      this.handleError('Error deleting reservation', error);
-    } finally {
-      this.loading = false;
-    }
+  // Verificar si una ruta está activa
+  isRouteActive(routePath: string): boolean {
+    const route = routePath.replace('/', '');
+    return this.currentRoute() === route;
   }
 
-  private handleError(message: string, error: any) {
-    console.error(message, error);
-    this.error = `${message}: ${error?.error?.error || error?.message || 'Unknown error'}`;
-  }
-
-  private showSuccess(message: string) {
-    // In a real app, we'd use a toast notification
-    alert(message);
-  }
-
-  clearError() {
-    this.error = '';
+  // Método para refrescar el estado de la API
+  async refreshApiStatus() {
+    await this.checkApiStatus();
   }
 }

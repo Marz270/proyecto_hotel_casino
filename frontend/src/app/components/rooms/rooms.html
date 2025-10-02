@@ -1,0 +1,141 @@
+<div class="rooms-page">
+  <div class="page-header">
+    <h2>🏠 Habitaciones Disponibles</h2>
+    <p>Consulta la disponibilidad de habitaciones para tu estadía</p>
+  </div>
+
+  <!-- Filtros de búsqueda -->
+  <div class="search-section">
+    <div class="search-header">
+      <h3>🔍 Buscar Disponibilidad</h3>
+    </div>
+
+    <div class="search-form">
+      <div class="date-inputs">
+        <div class="form-group">
+          <label for="checkIn">Check-in:</label>
+          <input
+            type="date"
+            id="checkIn"
+            [value]="checkIn()"
+            (change)="updateCheckIn($event.target.value)"
+            class="form-control"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="checkOut">Check-out:</label>
+          <input
+            type="date"
+            id="checkOut"
+            [value]="checkOut()"
+            (change)="updateCheckOut($event.target.value)"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="search-actions">
+        <button class="btn-primary" (click)="searchRooms()" [disabled]="isLoading()">
+          @if (isLoading()) { 🔄 Buscando... } @else { 🔍 Buscar Habitaciones }
+        </button>
+
+        <button class="btn-secondary" (click)="clearFilters()" [disabled]="isLoading()">
+          🗑️ Limpiar Filtros
+        </button>
+      </div>
+    </div>
+
+    @if (checkIn() && checkOut()) {
+    <div class="search-info">
+      <p>
+        📅 Buscando para <strong>{{ calculateNights() }}</strong>
+        {{ calculateNights() === 1 ? 'noche' : 'noches' }}
+        ({{ checkIn() }} - {{ checkOut() }})
+      </p>
+    </div>
+    }
+  </div>
+
+  <!-- Resultados -->
+  <div class="results-section">
+    <!-- Loading state -->
+    @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner">🔄</div>
+      <p>Cargando habitaciones disponibles...</p>
+    </div>
+    }
+
+    <!-- Empty state -->
+    @if (rooms().length === 0 && !isLoading()) {
+    <div class="empty-state">
+      <div class="empty-icon">🏠</div>
+      <h3>No hay habitaciones disponibles</h3>
+      <p>
+        @if (checkIn() && checkOut()) { No se encontraron habitaciones disponibles para las fechas
+        seleccionadas. } @else { Selecciona fechas de check-in y check-out para ver la
+        disponibilidad. }
+      </p>
+    </div>
+    }
+
+    <!-- Rooms grid -->
+    @if (rooms().length > 0 && !isLoading()) {
+    <div class="rooms-header">
+      <h3>{{ rooms().length }} habitaciones encontradas</h3>
+    </div>
+
+    <div class="rooms-grid">
+      @for (room of rooms(); track room.id) {
+      <div class="room-card" [class.unavailable]="!room.available">
+        <div class="room-header">
+          <h4>Habitación {{ room.room_number }}</h4>
+          <span
+            class="availability-badge"
+            [class.available]="room.available"
+            [class.unavailable]="!room.available"
+          >
+            {{ room.available ? 'DISPONIBLE' : 'OCUPADA' }}
+          </span>
+        </div>
+
+        <div class="room-details">
+          <div class="detail-item">
+            <span class="detail-label">Tipo:</span>
+            <span class="detail-value">{{ room.room_type }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Precio por noche:</span>
+            <span class="detail-value price">${{ room.price_per_night }}</span>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-label">Huéspedes máx:</span>
+            <span class="detail-value">{{ room.max_guests }}</span>
+          </div>
+
+          @if (checkIn() && checkOut()) {
+          <div class="detail-item total-price">
+            <span class="detail-label">Total ({{ calculateNights() }} noches):</span>
+            <span class="detail-value price-total">${{ calculateTotalPrice(room) }}</span>
+          </div>
+          }
+        </div>
+
+        <div class="room-actions">
+          @if (room.available) {
+          <button class="btn-primary btn-reserve" (click)="selectRoom(room)">
+            📅 Reservar Ahora
+          </button>
+          } @else {
+          <button class="btn-disabled" disabled>❌ No Disponible</button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+  </div>
+</div>

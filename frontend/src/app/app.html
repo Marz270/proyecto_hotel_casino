@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <div class="app-container">
   <!-- Header -->
   <header class="app-header">
@@ -6,235 +5,64 @@
     <p>Sistema de Reservas - Demo TFU3</p>
   </header>
 
+  <!-- Navigation -->
+  <nav class="app-navigation">
+    <div class="nav-container">
+      @for (item of navItems; track item.path) {
+      <button
+        class="nav-item"
+        [class.active]="isRouteActive(item.path)"
+        (click)="navigateTo(item.path)"
+        type="button"
+      >
+        <span class="nav-label">{{ item.label }}</span>
+        <span class="nav-description">{{ item.description }}</span>
+      </button>
+      }
+    </div>
+  </nav>
+
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs">
-      <button
-        class="tab-button"
-        [class.active]="activeTab === 'rooms'"
-        (click)="setActiveTab('rooms')"
-      >
-        🏠 Habitaciones
-      </button>
-      <button
-        class="tab-button"
-        [class.active]="activeTab === 'reservations'"
-        (click)="setActiveTab('reservations')"
-      >
-        📅 Reservas
-      </button>
-      <button
-        class="tab-button"
-        [class.active]="activeTab === 'reports'"
-        (click)="setActiveTab('reports')"
-      >
-        📊 Reportes
-      </button>
-    </nav>
-
-    <!-- Tab Content -->
-    <div class="tab-content">
-      <!-- Rooms Tab -->
-      <div *ngIf="activeTab === 'rooms'" class="tab-panel">
-        <h2>Habitaciones Disponibles</h2>
-        <div class="filters">
-          <label
-            >Check-in:
-            <input type="date" [(ngModel)]="checkIn" (change)="loadRooms()" />
-          </label>
-          <label
-            >Check-out:
-            <input type="date" [(ngModel)]="checkOut" (change)="loadRooms()" />
-          </label>
-          <button (click)="loadRooms()" class="btn-primary">Buscar</button>
-        </div>
-
-        <div class="rooms-grid" *ngIf="rooms.length > 0">
-          <div *ngFor="let room of rooms" class="room-card" [class.unavailable]="!room.available">
-            <h3>Habitación {{ room.room_number }}</h3>
-            <p><strong>Tipo:</strong> {{ room.room_type }}</p>
-            <p><strong>Precio:</strong> ${{ room.price_per_night }}/noche</p>
-            <p><strong>Huéspedes:</strong> {{ room.max_guests }}</p>
-            <p>
-              <strong>Estado:</strong>
-              <span [class]="room.available ? 'available' : 'unavailable'">
-                {{ room.available ? 'Disponible' : 'Ocupada' }}
-              </span>
-            </p>
-            <button *ngIf="room.available" class="btn-primary" (click)="reserveRoom(room)">
-              Reservar
-            </button>
-          </div>
-        </div>
-
-        <div *ngIf="rooms.length === 0 && !loading" class="no-data">
-          No hay habitaciones disponibles para las fechas seleccionadas.
-        </div>
-      </div>
-
-      <!-- Reservations Tab -->
-      <div *ngIf="activeTab === 'reservations'" class="tab-panel">
-        <h2>Gestión de Reservas</h2>
-
-        <!-- Create Reservation Form -->
-        <div class="reservation-form" *ngIf="showReservationForm">
-          <h3>Nueva Reserva</h3>
-          <form (ngSubmit)="createReservation()" #reservationForm="ngForm">
-            <label
-              >Nombre del Cliente:
-              <input
-                type="text"
-                [(ngModel)]="newReservation.client_name"
-                name="client_name"
-                required
-              />
-            </label>
-            <label
-              >Habitación:
-              <input
-                type="number"
-                [(ngModel)]="newReservation.room_number"
-                name="room_number"
-                required
-              />
-            </label>
-            <label
-              >Check-in:
-              <input type="date" [(ngModel)]="newReservation.check_in" name="check_in" required />
-            </label>
-            <label
-              >Check-out:
-              <input type="date" [(ngModel)]="newReservation.check_out" name="check_out" required />
-            </label>
-            <label
-              >Precio Total:
-              <input
-                type="number"
-                step="0.01"
-                [(ngModel)]="newReservation.total_price"
-                name="total_price"
-                required
-              />
-            </label>
-            <div class="form-actions">
-              <button type="submit" class="btn-primary" [disabled]="!reservationForm.form.valid">
-                Crear Reserva
-              </button>
-              <button type="button" class="btn-secondary" (click)="cancelReservation()">
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Reservations List -->
-        <div class="reservations-section">
-          <div class="section-header">
-            <h3>Reservas Existentes</h3>
-            <button
-              class="btn-primary"
-              (click)="showReservationForm = true"
-              *ngIf="!showReservationForm"
-            >
-              + Nueva Reserva
-            </button>
-          </div>
-
-          <div class="reservations-list" *ngIf="reservations.length > 0">
-            <div *ngFor="let reservation of reservations" class="reservation-card">
-              <h4>{{ reservation.client_name }}</h4>
-              <p><strong>Habitación:</strong> {{ reservation.room_number }}</p>
-              <p><strong>Check-in:</strong> {{ reservation.check_in | date }}</p>
-              <p><strong>Check-out:</strong> {{ reservation.check_out | date }}</p>
-              <p><strong>Total:</strong> ${{ reservation.total_price }}</p>
-              <div class="card-actions">
-                <button
-                  class="btn-danger"
-                  (click)="deleteReservation(reservation.id!)"
-                  [disabled]="!reservation.id"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="reservations.length === 0 && !loading" class="no-data">
-            No hay reservas registradas.
-          </div>
-        </div>
-      </div>
-
-      <!-- Reports Tab -->
-      <div *ngIf="activeTab === 'reports'" class="tab-panel">
-        <h2>Reportes Administrativos</h2>
-
-        <div class="reports-section" *ngIf="reports">
-          <!-- Summary Cards -->
-          <div class="summary-cards" *ngIf="reports.summary">
-            <div class="summary-card">
-              <h3>{{ reports.summary.total_bookings || 0 }}</h3>
-              <p>Total Reservas</p>
-            </div>
-            <div class="summary-card">
-              <h3>{{ reports.summary.total_rooms || 0 }}</h3>
-              <p>Total Habitaciones</p>
-            </div>
-            <div class="summary-card">
-              <h3>${{ reports.summary.avg_booking_value || 0 | number : '1.2-2' }}</h3>
-              <p>Valor Promedio</p>
-            </div>
-            <div class="summary-card">
-              <h3>{{ reports.summary.bookings_last_month || 0 }}</h3>
-              <p>Reservas (30 días)</p>
-            </div>
-          </div>
-
-          <!-- Occupancy Report -->
-          <div class="report-card" *ngIf="reports.occupancy">
-            <h3>Reporte de Ocupación</h3>
-            <p><strong>Habitaciones Totales:</strong> {{ reports.occupancy.total_rooms }}</p>
-            <p><strong>Habitaciones Ocupadas:</strong> {{ reports.occupancy.occupied_rooms }}</p>
-            <p><strong>Tasa de Ocupación:</strong> {{ reports.occupancy.occupancy_rate }}%</p>
-          </div>
-
-          <!-- Revenue Report -->
-          <div class="report-card" *ngIf="reports.revenue && reports.revenue.length > 0">
-            <h3>Ingresos por Mes</h3>
-            <div class="revenue-list">
-              <div *ngFor="let item of reports.revenue" class="revenue-item">
-                <span>{{ item.month | date : 'MMM yyyy' }}</span>
-                <span>${{ item.total_revenue }}</span>
-                <span>({{ item.total_bookings }} reservas)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button class="btn-primary" (click)="loadReports()">🔄 Actualizar Reportes</button>
+    <!-- Error Message Global -->
+    @if (appState.error()) {
+    <div class="error-banner">
+      <div class="error-content">
+        <span class="error-icon">⚠️</span>
+        <span class="error-message">{{ appState.error() }}</span>
+        <button
+          class="error-close"
+          (click)="appState.clearError()"
+          type="button"
+          aria-label="Cerrar error"
+        >
+          ✕
+        </button>
       </div>
     </div>
+    }
 
-    <!-- Loading Indicator -->
-    <div *ngIf="loading" class="loading">
-      <p>Cargando...</p>
-    </div>
-
-    <!-- Error Message -->
-    <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
-      <button (click)="clearError()" class="btn-secondary">Cerrar</button>
+    <!-- Router Outlet - Aquí se cargan los componentes de las rutas -->
+    <div class="route-content">
+      <router-outlet />
     </div>
   </main>
 
   <!-- Footer -->
   <footer class="app-footer">
     <p>🎓 TFU3 - Análisis y Diseño de Aplicaciones II - 2025</p>
-    <p>
-      API Backend: <span [class]="apiStatus">{{ apiStatus }}</span>
-    </p>
+    <div class="footer-status">
+      <span>API Backend:</span>
+      <span
+        [class]="
+          appState.apiStatus().includes('Connected') ? 'status-connected' : 'status-disconnected'
+        "
+      >
+        {{ appState.apiStatus() }}
+      </span>
+    </div>
+    <button class="refresh-button" (click)="refreshApiStatus()" type="button">
+      🔄 Verificar API
+    </button>
   </footer>
 </div>
-
-<router-outlet />

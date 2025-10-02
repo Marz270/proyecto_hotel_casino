@@ -22,17 +22,20 @@ const handleValidationErrors = (req, res, next) => {
 // Root endpoint
 router.get("/", (req, res) => {
   res.json({
-    message: "🏨 Salto Hotel & Casino API",
-    version: process.env.APP_VERSION || "1.0",
-    booking_mode: process.env.BOOKING_MODE || "pg",
-    endpoints: {
-      "GET /rooms": "Get available rooms",
-      "GET /bookings": "Get all reservations",
-      "POST /reservations": "Create new reservation",
-      "POST /payments": "Process payment",
-      "GET /reports": "Get admin reports",
-      "GET /bookings/:id": "Get booking by ID",
-      "DELETE /bookings/:id": "Delete booking by ID",
+    success: true,
+    data: {
+      message: "🏨 Salto Hotel & Casino API",
+      version: process.env.APP_VERSION || "1.0",
+      booking_mode: process.env.BOOKING_MODE || "pg",
+      endpoints: {
+        "GET /rooms": "Get available rooms",
+        "GET /bookings": "Get all reservations",
+        "POST /reservations": "Create new reservation",
+        "POST /payments": "Process payment",
+        "GET /reports": "Get admin reports",
+        "GET /bookings/:id": "Get booking by ID",
+        "DELETE /bookings/:id": "Delete booking by ID",
+      },
     },
   });
 });
