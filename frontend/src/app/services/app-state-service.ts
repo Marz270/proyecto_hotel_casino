@@ -1,10 +1,13 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Room } from '../models/room.model';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppStateService {
+  private readonly notificationService = inject(NotificationService);
+
   // Estado compartido entre componentes
   private readonly _selectedRoom = signal<Room | null>(null);
   private readonly _apiStatus = signal('connecting...');
@@ -26,6 +29,9 @@ export class AppStateService {
 
   setError(error: string) {
     this._error.set(error);
+    if (error) {
+      this.notificationService.showError(error);
+    }
   }
 
   clearError() {
@@ -34,14 +40,15 @@ export class AppStateService {
 
   // Método para notificaciones de éxito
   showSuccess(message: string) {
-    console.log('Success:', message);
-    // En una aplicación real, usaríamos un servicio de toasts
-    alert(`✅ ${message}`);
+    this.notificationService.showSuccess(message);
     this.clearError();
   }
 
   showError(message: string) {
     this.setError(message);
-    console.error('Application Error:', message);
+  }
+
+  showInfo(message: string) {
+    this.notificationService.showInfo(message);
   }
 }

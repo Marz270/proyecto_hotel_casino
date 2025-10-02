@@ -1,139 +1,182 @@
-<div class="rooms-page">
-  <div class="page-header">
-    <h2>🏠 Habitaciones Disponibles</h2>
-    <p>Consulta la disponibilidad de habitaciones para tu estadía</p>
-  </div>
+<div class="rooms-container">
+  <!-- Header Card -->
+  <mat-card class="header-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>hotel</mat-icon>
+      <mat-card-title>Habitaciones Disponibles</mat-card-title>
+      <mat-card-subtitle
+        >Consulta la disponibilidad de habitaciones para tu estadía</mat-card-subtitle
+      >
+    </mat-card-header>
+  </mat-card>
 
-  <!-- Filtros de búsqueda -->
-  <div class="search-section">
-    <div class="search-header">
-      <h3>🔍 Buscar Disponibilidad</h3>
-    </div>
+  <!-- Search Filters Card -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-icon mat-card-avatar>search</mat-icon>
+      <mat-card-title>Buscar Disponibilidad</mat-card-title>
+    </mat-card-header>
 
-    <div class="search-form">
-      <div class="date-inputs">
-        <div class="form-group">
-          <label for="checkIn">Check-in:</label>
-          <input
-            type="date"
-            id="checkIn"
-            [value]="checkIn()"
-            (change)="updateCheckIn($event.target.value)"
-            class="form-control"
-          />
+    <mat-card-content>
+      <form class="search-form">
+        <div class="date-fields">
+          <mat-form-field appearance="outline">
+            <mat-label>Check-in</mat-label>
+            <input
+              matInput
+              [matDatepicker]="checkInPicker"
+              [value]="checkIn()"
+              (dateChange)="updateCheckIn($event.value)"
+              placeholder="Selecciona fecha"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="checkInPicker"></mat-datepicker-toggle>
+            <mat-datepicker #checkInPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Check-out</mat-label>
+            <input
+              matInput
+              [matDatepicker]="checkOutPicker"
+              [value]="checkOut()"
+              (dateChange)="updateCheckOut($event.value)"
+              placeholder="Selecciona fecha"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="checkOutPicker"></mat-datepicker-toggle>
+            <mat-datepicker #checkOutPicker></mat-datepicker>
+          </mat-form-field>
         </div>
 
-        <div class="form-group">
-          <label for="checkOut">Check-out:</label>
-          <input
-            type="date"
-            id="checkOut"
-            [value]="checkOut()"
-            (change)="updateCheckOut($event.target.value)"
-            class="form-control"
-          />
+        <div class="search-actions">
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="searchRooms()"
+            [disabled]="isLoading()"
+          >
+            @if (isLoading()) {
+            <ng-container>
+              <mat-icon>hourglass_empty</mat-icon>
+              Buscando...
+            </ng-container>
+            } @else {
+            <ng-container>
+              <mat-icon>search</mat-icon>
+              Buscar Habitaciones
+            </ng-container>
+            }
+          </button>
+
+          <button mat-stroked-button (click)="clearFilters()" [disabled]="isLoading()">
+            <mat-icon>clear</mat-icon>
+            Limpiar Filtros
+          </button>
         </div>
-      </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
 
-      <div class="search-actions">
-        <button class="btn-primary" (click)="searchRooms()" [disabled]="isLoading()">
-          @if (isLoading()) { 🔄 Buscando... } @else { 🔍 Buscar Habitaciones }
-        </button>
+  <!-- Search Info -->
+  @if (checkIn() && checkOut()) {
+  <mat-card class="search-info-card">
+    <mat-card-content>
+      <mat-chip-set>
+        <mat-chip color="accent" selected>
+          <mat-icon>event</mat-icon>
+          {{ calculateNights() }} {{ calculateNights() === 1 ? 'noche' : 'noches' }}
+        </mat-chip>
+        <mat-chip>
+          {{ checkIn() | date : 'shortDate' }} - {{ checkOut() | date : 'shortDate' }}
+        </mat-chip>
+      </mat-chip-set>
+    </mat-card-content>
+  </mat-card>
+  }
 
-        <button class="btn-secondary" (click)="clearFilters()" [disabled]="isLoading()">
-          🗑️ Limpiar Filtros
-        </button>
-      </div>
-    </div>
+  <!-- Loading Progress Bar -->
+  @if (isLoading()) {
+  <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+  }
 
-    @if (checkIn() && checkOut()) {
-    <div class="search-info">
-      <p>
-        📅 Buscando para <strong>{{ calculateNights() }}</strong>
-        {{ calculateNights() === 1 ? 'noche' : 'noches' }}
-        ({{ checkIn() }} - {{ checkOut() }})
-      </p>
-    </div>
-    }
-  </div>
-
-  <!-- Resultados -->
+  <!-- Results -->
   <div class="results-section">
-    <!-- Loading state -->
-    @if (isLoading()) {
-    <div class="loading-state">
-      <div class="loading-spinner">🔄</div>
-      <p>Cargando habitaciones disponibles...</p>
-    </div>
-    }
-
-    <!-- Empty state -->
     @if (rooms().length === 0 && !isLoading()) {
-    <div class="empty-state">
-      <div class="empty-icon">🏠</div>
-      <h3>No hay habitaciones disponibles</h3>
-      <p>
-        @if (checkIn() && checkOut()) { No se encontraron habitaciones disponibles para las fechas
-        seleccionadas. } @else { Selecciona fechas de check-in y check-out para ver la
-        disponibilidad. }
-      </p>
-    </div>
-    }
-
-    <!-- Rooms grid -->
-    @if (rooms().length > 0 && !isLoading()) {
-    <div class="rooms-header">
-      <h3>{{ rooms().length }} habitaciones encontradas</h3>
-    </div>
+    <mat-card class="empty-state-card">
+      <mat-card-content>
+        <div class="empty-state">
+          <mat-icon class="empty-icon">hotel_class</mat-icon>
+          <h3>No hay habitaciones disponibles</h3>
+          <p>
+            @if (checkIn() && checkOut()) { No se encontraron habitaciones disponibles para las
+            fechas seleccionadas. } @else { Selecciona fechas de check-in y check-out para ver la
+            disponibilidad. }
+          </p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    } @if (rooms().length > 0 && !isLoading()) {
+    <mat-card class="results-header-card">
+      <mat-card-content>
+        <h3>{{ rooms().length }} Habitaciones encontradas</h3>
+      </mat-card-content>
+    </mat-card>
 
     <div class="rooms-grid">
       @for (room of rooms(); track room.id) {
-      <div class="room-card" [class.unavailable]="!room.available">
-        <div class="room-header">
-          <h4>Habitación {{ room.room_number }}</h4>
-          <span
-            class="availability-badge"
-            [class.available]="room.available"
-            [class.unavailable]="!room.available"
-          >
-            {{ room.available ? 'DISPONIBLE' : 'OCUPADA' }}
-          </span>
-        </div>
+      <mat-card class="room-card" [class.unavailable]="!room.available">
+        <mat-card-header>
+          <mat-icon mat-card-avatar [color]="room.available ? 'primary' : 'warn'">
+            {{ room.available ? 'hotel' : 'hotel_class' }}
+          </mat-icon>
+          <mat-card-title>Habitación {{ room.room_number }}</mat-card-title>
+          <mat-card-subtitle>{{ room.room_type }}</mat-card-subtitle>
 
-        <div class="room-details">
-          <div class="detail-item">
-            <span class="detail-label">Tipo:</span>
-            <span class="detail-value">{{ room.room_type }}</span>
+          <div class="card-actions-header">
+            <mat-chip [color]="room.available ? 'primary' : 'warn'" selected>
+              {{ room.available ? 'DISPONIBLE' : 'OCUPADA' }}
+            </mat-chip>
           </div>
+        </mat-card-header>
 
-          <div class="detail-item">
-            <span class="detail-label">Precio por noche:</span>
-            <span class="detail-value price">${{ room.price_per_night }}</span>
-          </div>
+        <mat-card-content>
+          <mat-list>
+            <mat-list-item>
+              <mat-icon matListItemIcon>attach_money</mat-icon>
+              <div matListItemTitle>Precio por noche</div>
+              <div matListItemLine>${{ room.price_per_night }}</div>
+            </mat-list-item>
 
-          <div class="detail-item">
-            <span class="detail-label">Huéspedes máx:</span>
-            <span class="detail-value">{{ room.max_guests }}</span>
-          </div>
+            <mat-list-item>
+              <mat-icon matListItemIcon>people</mat-icon>
+              <div matListItemTitle>Huéspedes máx</div>
+              <div matListItemLine>{{ room.max_guests }}</div>
+            </mat-list-item>
 
-          @if (checkIn() && checkOut()) {
-          <div class="detail-item total-price">
-            <span class="detail-label">Total ({{ calculateNights() }} noches):</span>
-            <span class="detail-value price-total">${{ calculateTotalPrice(room) }}</span>
-          </div>
-          }
-        </div>
+            @if (checkIn() && checkOut()) {
+            <mat-divider></mat-divider>
+            <mat-list-item>
+              <mat-icon matListItemIcon>calculate</mat-icon>
+              <div matListItemTitle>Total ({{ calculateNights() }} noches)</div>
+              <div matListItemLine class="total-price">${{ calculateTotalPrice(room) }}</div>
+            </mat-list-item>
+            }
+          </mat-list>
+        </mat-card-content>
 
-        <div class="room-actions">
+        <mat-card-actions align="end">
           @if (room.available) {
-          <button class="btn-primary btn-reserve" (click)="selectRoom(room)">
-            📅 Reservar Ahora
+          <button mat-raised-button color="primary" (click)="selectRoom(room)">
+            <mat-icon>event_note</mat-icon>
+            Reservar Ahora
           </button>
           } @else {
-          <button class="btn-disabled" disabled>❌ No Disponible</button>
+          <button mat-stroked-button disabled>
+            <mat-icon>block</mat-icon>
+            No Disponible
+          </button>
           }
-        </div>
-      </div>
+        </mat-card-actions>
+      </mat-card>
       }
     </div>
     }

@@ -1,68 +1,54 @@
 <div class="app-container">
-  <!-- Header -->
-  <header class="app-header">
-    <h1>🏨 Salto Hotel & Casino</h1>
-    <p>Sistema de Reservas - Demo TFU3</p>
-  </header>
+  <!-- Material Toolbar -->
+  <mat-toolbar class="app-toolbar">
+    <img src="SALTO_logo_blanco.svg" alt="Salto Hotel & Casino" class="app-logo" />
+    <span class="toolbar-spacer">Salto Hotel & Casino</span>
+    <span class="app-subtitle">Sistema de Reservas - Demo TFU3</span>
+  </mat-toolbar>
 
-  <!-- Navigation -->
-  <nav class="app-navigation">
-    <div class="nav-container">
-      @for (item of navItems; track item.path) {
-      <button
-        class="nav-item"
-        [class.active]="isRouteActive(item.path)"
-        (click)="navigateTo(item.path)"
-        type="button"
-      >
-        <span class="nav-label">{{ item.label }}</span>
-        <span class="nav-description">{{ item.description }}</span>
-      </button>
-      }
-    </div>
-  </nav>
+  <!-- Material Tabs for Navigation -->
+  <mat-tab-group
+    class="app-navigation"
+    [selectedIndex]="getActiveTabIndex()"
+    (selectedTabChange)="onTabChange($event)"
+    mat-stretch-tabs
+  >
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>hotel</mat-icon>
+        <span>Habitaciones</span>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>event_note</mat-icon>
+        <span>Reservas</span>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
 
   <!-- Main Content -->
   <main class="main-content">
-    <!-- Error Message Global -->
-    @if (appState.error()) {
-    <div class="error-banner">
-      <div class="error-content">
-        <span class="error-icon">⚠️</span>
-        <span class="error-message">{{ appState.error() }}</span>
-        <button
-          class="error-close"
-          (click)="appState.clearError()"
-          type="button"
-          aria-label="Cerrar error"
-        >
-          ✕
-        </button>
-      </div>
-    </div>
-    }
-
-    <!-- Router Outlet - Aquí se cargan los componentes de las rutas -->
-    <div class="route-content">
-      <router-outlet />
-    </div>
+    <router-outlet />
   </main>
 
-  <!-- Footer -->
-  <footer class="app-footer">
-    <p>🎓 TFU3 - Análisis y Diseño de Aplicaciones II - 2025</p>
+  <!-- Material Footer -->
+  <mat-toolbar class="app-footer">
+    <span>🎓 TFU3 - Análisis y Diseño de Aplicaciones II - 2025</span>
+    <span class="toolbar-spacer"></span>
+
     <div class="footer-status">
-      <span>API Backend:</span>
-      <span
-        [class]="
-          appState.apiStatus().includes('Connected') ? 'status-connected' : 'status-disconnected'
-        "
-      >
+      <mat-chip [color]="appState.apiStatus().includes('Connected') ? 'primary' : 'warn'" selected>
+        <mat-icon>{{
+          appState.apiStatus().includes('Connected') ? 'cloud_done' : 'cloud_off'
+        }}</mat-icon>
         {{ appState.apiStatus() }}
-      </span>
+      </mat-chip>
+
+      <button mat-icon-button (click)="refreshApiStatus()" matTooltip="Verificar conexión API">
+        <mat-icon>refresh</mat-icon>
+      </button>
     </div>
-    <button class="refresh-button" (click)="refreshApiStatus()" type="button">
-      🔄 Verificar API
-    </button>
-  </footer>
+  </mat-toolbar>
 </div>

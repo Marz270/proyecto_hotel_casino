@@ -7,11 +7,12 @@ import { firstValueFrom } from 'rxjs';
 import { RoomsService } from '../../services/rooms-service';
 import { AppStateService } from '../../services/app-state-service';
 import { Room, RoomSearchParams } from '../../models/room.model';
+import { MATERIAL_MODULES } from '../../material.config';
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ...MATERIAL_MODULES],
   templateUrl: './rooms.html',
   styleUrl: './rooms.css',
 })
@@ -22,8 +23,8 @@ export class RoomsComponent implements OnInit {
 
   rooms = signal<Room[]>([]);
   isLoading = signal(false);
-  checkIn = signal('');
-  checkOut = signal('');
+  checkIn = signal<Date | null>(null);
+  checkOut = signal<Date | null>(null);
 
   async ngOnInit() {
     await this.loadRooms();
@@ -36,8 +37,8 @@ export class RoomsComponent implements OnInit {
       const params: RoomSearchParams = {};
 
       if (this.checkIn() && this.checkOut()) {
-        params.check_in = this.checkIn();
-        params.check_out = this.checkOut();
+        params.check_in = this.formatDate(this.checkIn()!);
+        params.check_out = this.formatDate(this.checkOut()!);
       }
 
       const rooms = await firstValueFrom(this.roomsService.getRooms(params));
@@ -56,13 +57,8 @@ export class RoomsComponent implements OnInit {
   }
 
   selectRoom(room: Room) {
-    // Guardar habitación seleccionada en el estado global
     this.appState.setSelectedRoom(room);
-
-    // Navegar a la página de reservas
     this.router.navigate(['/reservas']);
-
-    // Mostrar mensaje de confirmación
     this.appState.showSuccess(
       `Habitación ${room.room_number} seleccionada. Redirigiendo a reservas...`
     );
@@ -73,7 +69,11 @@ export class RoomsComponent implements OnInit {
       return room.price_per_night;
     }
 
-    return this.roomsService.calculateTotalPrice(room, this.checkIn(), this.checkOut());
+    return this.roomsService.calculateTotalPrice(
+      room,
+      this.formatDate(this.checkIn()!),
+      this.formatDate(this.checkOut()!)
+    );
   }
 
   calculateNights(): number {
@@ -81,21 +81,27 @@ export class RoomsComponent implements OnInit {
       return 1;
     }
 
-    return this.roomsService.calculateNights(this.checkIn(), this.checkOut());
+    return this.roomsService.calculateNights(
+      this.formatDate(this.checkIn()!),
+      this.formatDate(this.checkOut()!)
+    );
   }
 
-  updateCheckIn(value: string) {
+  updateCheckIn(value: Date | null) {
     this.checkIn.set(value);
   }
 
-  updateCheckOut(value: string) {
+  updateCheckOut(value: Date | null) {
     this.checkOut.set(value);
   }
 
-  // Método para limpiar filtros
   clearFilters() {
-    this.checkIn.set('');
-    this.checkOut.set('');
+    this.checkIn.set(null);
+    this.checkOut.set(null);
     this.loadRooms();
+  }
+
+  private formatDate(date: Date): string {
+    return date.toISOString().split('T')[0];
   }
 }

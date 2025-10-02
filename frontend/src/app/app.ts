@@ -1,17 +1,18 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
 import { filter, firstValueFrom } from 'rxjs';
+import { MatTabChangeEvent } from '@angular/material/tabs';
 
 import { HttpService } from './services/http-service';
 import { AppStateService } from './services/app-state-service';
 import { ApiInfo } from './models/api.model';
+import { MATERIAL_MODULES } from './material.config';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, HttpClientModule],
+  imports: [RouterOutlet, CommonModule, ...MATERIAL_MODULES],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -20,27 +21,9 @@ export class App implements OnInit {
   private readonly router = inject(Router);
   protected readonly appState = inject(AppStateService);
 
-  protected readonly title = signal('Hotel & Casino');
   protected readonly currentRoute = signal('habitaciones');
 
-  // Configuración de navegación
-  protected readonly navItems = [
-    {
-      path: '/habitaciones',
-      label: '🏠 Habitaciones',
-      description: 'Consultar disponibilidad',
-    },
-    {
-      path: '/reservas',
-      label: '📅 Reservas',
-      description: 'Gestionar reservas',
-    },
-    {
-      path: '/reportes',
-      label: '📊 Reportes',
-      description: 'Estadísticas y análisis',
-    },
-  ];
+  private readonly routeMap = ['/habitaciones', '/reservas', '/reportes'];
 
   async ngOnInit() {
     await this.checkApiStatus();
@@ -48,7 +31,6 @@ export class App implements OnInit {
   }
 
   private setupRouteTracking() {
-    // Rastrear cambios de ruta para actualizar navegación activa
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -72,23 +54,22 @@ export class App implements OnInit {
       this.appState.setApiStatus('Disconnected');
       const errorMessage = error instanceof Error ? error.message : 'Cannot connect to API';
       this.appState.setError(`${errorMessage}. Make sure the backend is running.`);
-      console.error('API Status Check Error:', error);
     }
   }
 
-  // Navegación programática
-  navigateTo(path: string) {
-    this.router.navigate([path]);
-    this.appState.clearError();
+  getActiveTabIndex(): number {
+    const currentPath = `/${this.currentRoute()}`;
+    return Math.max(0, this.routeMap.indexOf(currentPath));
   }
 
-  // Verificar si una ruta está activa
-  isRouteActive(routePath: string): boolean {
-    const route = routePath.replace('/', '');
-    return this.currentRoute() === route;
+  onTabChange(event: MatTabChangeEvent) {
+    const route = this.routeMap[event.index];
+    if (route) {
+      this.router.navigate([route]);
+      this.appState.clearError();
+    }
   }
 
-  // Método para refrescar el estado de la API
   async refreshApiStatus() {
     await this.checkApiStatus();
   }

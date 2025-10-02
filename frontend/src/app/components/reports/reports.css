@@ -1,5 +1,7 @@
 .reports-section {
   padding: 1rem;
+  background-color: var(--casino-dark);
+  color: var(--casino-white);
 }
 
 .reports-content {
@@ -16,36 +18,44 @@
 }
 
 .summary-card {
-  background: white;
+  background: var(--casino-black);
+  border: 2px solid var(--casino-gold);
   padding: 1.5rem;
   border-radius: 8px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
 }
 
 .summary-card h3 {
   font-size: 2rem;
-  color: #667eea;
+  color: var(--casino-gold);
   margin-bottom: 0.5rem;
   font-weight: 300;
 }
 
 .summary-card p {
-  color: #666;
+  color: var(--casino-silver);
   font-weight: 500;
 }
 
 .report-card {
-  background: white;
+  background: var(--casino-black);
+  border: 2px solid var(--casino-gold);
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
 }
 
 .report-card h3 {
-  color: #333;
+  color: var(--casino-gold);
   margin-bottom: 1rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--casino-gold);
   padding-bottom: 0.5rem;
 }
 
@@ -59,8 +69,9 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem;
-  background: #f8f9fa;
+  background: rgba(255, 193, 7, 0.1);
   border-radius: 4px;
+  color: var(--casino-white);
 }
 
 .btn-primary {
@@ -69,18 +80,21 @@
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  background-color: #667eea;
-  color: white;
-  font-weight: 500;
+  background-color: var(--casino-gold);
+  color: var(--casino-black);
+  font-weight: 600;
   transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background-color: #5a6fd8;
+  background-color: #ffca28;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
 }
 
 .btn-primary:disabled {
-  background-color: #ccc;
+  background-color: #666;
+  color: #999;
   cursor: not-allowed;
 }
 
@@ -88,8 +102,9 @@
   text-align: center;
   padding: 2rem;
   margin: 1rem 0;
-  color: #666;
-  background-color: #f8f9fa;
+  color: var(--casino-silver);
+  background-color: var(--casino-black);
+  border: 1px solid var(--casino-gold);
   border-radius: 4px;
 }
 
