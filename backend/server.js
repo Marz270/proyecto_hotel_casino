@@ -3,6 +3,8 @@ const cors = require("cors");
 const morgan = require("morgan");
 require("dotenv").config();
 const indexRoutes = require("./routes/index.routes");
+const valetKeyRoutes = require("./routes/valetKey.routes");
+const roomsRoutes = require("./routes/rooms.routes");
 const app = express();
 
 app.use(cors());
@@ -19,7 +21,7 @@ app.use((err, req, res, next) => {
 });
 
 // Routes
-app.use("/", indexRoutes);
+app.use("/", indexRoutes, valetKeyRoutes, roomsRoutes);
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {

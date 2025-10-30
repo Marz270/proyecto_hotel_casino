@@ -16,7 +16,7 @@ Se han seleccionado e implementado siete patrones (cubriendo disponibilidad, ren
 
 - Health Endpoint Monitoring (Disponibilidad)
 - Circuit Breaker (Disponibilidad)
-- Retry (Disponibilidad)
+- Valet Key (Seguridad)
 - Cache-Aside (Rendimiento)
 - Competing Consumers (Rendimiento)
 - Gateway Offloading (Seguridad)
@@ -101,41 +101,74 @@ Notas de implementación:
 
 ---
 
-## 3. Retry (Disponibilidad)
+## 3. Valet Key (Seguridad)
 
-Diagrama de actividad (PlantUML):
+Diagrama de secuencia (PlantUML):
 
 ```plantuml
 @startuml
-start
-:Realizar operación;
+actor Cliente
+participant "Backend API" as API
+participant "Token Generator" as TokenGen
+participant "Cloud Storage\n(S3/Azure)" as Storage
+database "PostgreSQL" as DB
 
-if (¿Operación exitosa?) then (sí)
-  :Retornar resultado;
-  stop
-else (no)
-  if (¿Intentos < MAX_RETRIES?) then (sí)
-    :Esperar backoff exponencial;
-    :Incrementar contador;
-    :Realizar operación;
-    backward:¿Operación exitosa?;
-  else (no)
-    :Registrar fallo permanente;
-    :Retornar error al cliente;
-    stop
-  endif
-endif
+Cliente -> API: POST /bookings/{id}/documents/upload-url
+activate API
+
+API -> TokenGen: generatePresignedURL(\n  resource: "bookings/123/passport.pdf",\n  permissions: ["write"],\n  expiry: 15min\n)
+activate TokenGen
+
+TokenGen -> Storage: create temporary access token
+activate Storage
+Storage --> TokenGen: signed URL + token
+deactivate Storage
+
+TokenGen --> API: { uploadUrl, expiresAt }
+deactivate TokenGen
+
+API -> DB: INSERT INTO upload_tokens\n  (booking_id, token_hash, expires_at)
+activate DB
+DB --> API: OK
+deactivate DB
+
+API --> Cliente: { uploadUrl, expiresAt, permissions }
+deactivate API
+
+Cliente -> Storage: PUT {uploadUrl} + document binary
+activate Storage
+Storage -> Storage: validate token & permissions
+Storage --> Cliente: 200 OK - Upload complete
+deactivate Storage
+
+note right of Storage
+  Cliente sube documento
+  DIRECTAMENTE a S3/Azure
+  sin pasar por backend
+end note
+
 @enduml
 ```
 
 Justificación:
 
-- Maneja fallos transitorios (timeouts, errores temporales de red) sin demandar intervención humana.
-- Complementa Circuit Breaker: Retry para errores recuperables; Circuit Breaker para fallos repetidos.
+- En un hotel-casino, los huéspedes deben subir documentos sensibles (pasaportes, comprobantes de pago, identificaciones requeridas por regulación de juegos de azar).
+- El patrón Valet Key permite que el cliente suba archivos directamente al almacenamiento cloud sin que pasen por el backend, reduciendo la superficie de ataque y cumpliendo con normativas de protección de datos.
+- Tokens con permisos granulares y expiración automática (15 minutos) garantizan seguridad sin comprometer la experiencia del usuario.
 
-Implementación propuesta:
+Beneficios en el proyecto:
 
-- 3 reintentos con backoff exponencial (1s, 2s, 4s). Solo para errores recuperables (timeout, 5xx temporales).
+- **Seguridad mejorada**: Backend nunca toca archivos sensibles, evitando ataques de file injection o path traversal.
+- **Rendimiento**: Libera recursos del servidor al no procesar binarios grandes (uploads paralelos, sin timeouts).
+- **Cumplimiento regulatorio**: Logs de auditoría en S3, encriptación en tránsito y reposo, trazabilidad completa para auditorías del casino.
+- **Escalabilidad**: Backend maneja 1000+ solicitudes/seg de tokens, mientras S3/Azure escala automáticamente para uploads concurrentes.
+
+Notas de implementación:
+
+- Usar un sidecar o servicio que genere tokens firmados con HMAC-SHA256.
+- Integrar con AWS S3 presigned URLs o Azure Blob SAS tokens en producción.
+- Almacenar hash del token en PostgreSQL para validación y auditoría.
+- Implementar cleanup automático de tokens expirados con triggers de BD.
 
 ---
 
@@ -282,6 +315,7 @@ Demostración:
 ```
 
 El script automatizado verifica:
+
 - Rate limiting (envía 20 requests rápidos, espera 429)
 - Security headers (X-Frame-Options, X-XSS-Protection, etc.)
 - Compresión gzip (compara tamaños con/sin gzip)
@@ -352,6 +386,7 @@ Implementación aplicada:
 
 - Health check: `backend/patterns/health/healthCheck.js` (o implementación inline en `server.js`).
 - Circuit Breaker: `backend/patterns/circuit-breaker/paymentCircuitBreaker.js` (sugerido usar `opossum` o similar).
+- **Valet Key**: `backend/patterns/valet-key/valetKeyGenerator.js` (generación de tokens firmados), `backend/routes/documents.routes.js` (endpoints de upload/download), `backend/database/scripts/003_create_upload_tokens_table.sql` (tabla de auditoría).
 - Cache-Aside: integración con Redis (sugerido archivo `backend/patterns/cache/cacheAside.js`).
 - Queues / Competing Consumers: `backend/patterns/queue/` y workers en `backend/services/workers/`.
 
@@ -376,7 +411,47 @@ for ($i=0; $i -lt 10; $i++) {
 }
 ```
 
-- Demo Cache-Aside:
+### Demo Valet Key (upload seguro de documentos):
+
+PowerShell:
+
+````powershell
+# Paso 1: Crear una reserva de prueba
+$booking = curl -X POST http://localhost:3000/bookings -H "Content-Type: application/json" -d '{
+  "client_name": "Juan Pérez",
+  "room_number": 205,
+  "check_in": "2025-11-05",
+  "check_out": "2025-11-08",
+  "total_price": 450.00
+}' | ConvertFrom-Json
+
+$bookingId = $booking.id
+Write-Host "✅ Reserva creada: ID = $bookingId"
+
+# Paso 2: Solicitar token temporal para subir pasaporte
+$tokenResponse = curl -X POST "http://localhost:3000/bookings/$bookingId/documents/request-upload" -H "Content-Type: application/json" -d '{"documentType": "passport"}' | ConvertFrom-Json
+
+Write-Host "🎫 Token generado - Expira: $($tokenResponse.expiresAt)"
+Write-Host "📤 Upload URL: $($tokenResponse.uploadUrl)"
+
+# Paso 3: Subir documento usando el token (simulado)
+$uploadUrl = $tokenResponse.uploadUrl
+"Test passport content" | Out-File -FilePath "C:\temp\passport_demo.pdf"
+
+$uploadResult = curl -X PUT $uploadUrl -F "file=@C:\temp\passport_demo.pdf" | ConvertFrom-Json
+
+Write-Host "✅ Documento subido: $($uploadResult.file.filename) ($($uploadResult.file.size) bytes)"
+
+# Paso 4: Verificar seguridad - Intentar reusar token (debería fallar)
+Write-Host "🚫 Intentando reusar token..."
+try {
+  curl -X PUT $uploadUrl -F "file=@C:\temp\passport_demo.pdf" 2>&1 | Out-Null
+  Write-Host "❌ ERROR: Token reusado (no debería permitirse)"
+} catch {
+  Write-Host "✅ Token rechazado correctamente (single-use o expirado)"
+}
+`
+### Demo Cache-Aside:
 
 PowerShell:
 
@@ -386,7 +461,7 @@ Measure-Command { curl http://localhost:3000/rooms/availability?month=2025-09 }
 
 Write-Host "Segunda consulta (cache HIT)"
 Measure-Command { curl http://localhost:3000/rooms/availability?month=2025-09 }
-```
+````
 
 ---
 

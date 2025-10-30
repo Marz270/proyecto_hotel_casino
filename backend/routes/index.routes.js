@@ -1,10 +1,11 @@
 const express = require("express");
+const cacheService = require("../services/cacheService");
 const { body, param, validationResult } = require("express-validator");
 const BookingServiceFactory = require("../services/bookingServiceFactory");
-const { 
-  paymentCircuitBreaker, 
+const {
+  paymentCircuitBreaker,
   getCircuitBreakerStatus,
-  resetCircuitBreaker 
+  resetCircuitBreaker,
 } = require("../patterns/circuit-breaker/paymentCircuitBreaker");
 const router = express.Router();
 
@@ -99,6 +100,11 @@ router.post(
       const result = await bookingService.createBooking(req.body);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al crear reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log("[CACHE INVALIDATION] Booking created, cache invalidated");
+
         res.status(201).json({
           success: true,
           data: result.data,
@@ -168,6 +174,11 @@ router.delete(
       const result = await bookingService.deleteBooking(req.params.id);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al eliminar reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log("[CACHE INVALIDATION] Booking deleted, cache invalidated");
+
         res.json({
           success: true,
           data: result.data,
@@ -190,48 +201,6 @@ router.delete(
     }
   }
 );
-
-// GET /rooms - Obtener habitaciones disponibles
-router.get("/rooms", async (req, res) => {
-  try {
-    const { check_in, check_out } = req.query;
-
-    let query = `
-      SELECT r.*, 
-        CASE WHEN EXISTS (
-          SELECT 1 FROM bookings b 
-          WHERE b.room_number = r.room_number 
-          AND (
-            (b.check_in <= $1 AND b.check_out > $1) OR
-            (b.check_in < $2 AND b.check_out >= $2) OR
-            (b.check_in >= $1 AND b.check_out <= $2)
-          )
-        ) THEN false ELSE true END as available
-      FROM rooms r
-      ORDER BY r.room_number
-    `;
-
-    const values =
-      check_in && check_out
-        ? [check_in, check_out]
-        : ["1900-01-01", "1900-01-01"];
-
-    const result = await require("../database/db").query(query, values);
-
-    res.json({
-      success: true,
-      data: result.rows,
-      filters: { check_in, check_out },
-      count: result.rows.length,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "Error fetching rooms",
-      details: error.message,
-    });
-  }
-});
 
 // POST /reservations - Crear nueva reserva (alias para /bookings)
 router.post(
@@ -257,6 +226,13 @@ router.post(
       const result = await bookingService.createBooking(req.body);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al crear reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log(
+          "[CACHE INVALIDATION] Reservation created, cache invalidated"
+        );
+
         res.status(201).json({
           success: true,
           data: result.data,
@@ -313,7 +289,8 @@ router.post(
           success: true,
           data: paymentResult,
           message: paymentResult.message,
-          warning: "Payment service is temporarily unavailable. Payment queued for processing.",
+          warning:
+            "Payment service is temporarily unavailable. Payment queued for processing.",
         });
       }
 
@@ -326,7 +303,7 @@ router.post(
     } catch (error) {
       // Error no manejado por el circuit breaker
       console.error("Payment error:", error);
-      
+
       res.status(500).json({
         success: false,
         error: "Payment processing failed",
@@ -341,7 +318,7 @@ router.post(
 router.get("/payments/circuit-status", (req, res) => {
   try {
     const status = getCircuitBreakerStatus();
-    
+
     res.json({
       success: true,
       data: status,
@@ -360,7 +337,7 @@ router.get("/payments/circuit-status", (req, res) => {
 router.post("/payments/circuit-reset", (req, res) => {
   try {
     resetCircuitBreaker();
-    
+
     res.json({
       success: true,
       message: "Circuit Breaker reset to CLOSED state",
