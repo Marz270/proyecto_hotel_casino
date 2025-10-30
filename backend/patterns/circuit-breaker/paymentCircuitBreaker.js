@@ -78,41 +78,41 @@ const paymentCircuitBreaker = new CircuitBreaker(processPaymentExternal, circuit
 // Event listeners para logging y monitoreo
 
 paymentCircuitBreaker.on('open', () => {
-  console.warn('⚠️  Circuit Breaker OPENED - Payment service appears to be down');
+  console.warn('[WARNING]  Circuit Breaker OPENED - Payment service appears to be down');
   console.warn('   Subsequent requests will fail fast without attempting payment processing');
 });
 
 paymentCircuitBreaker.on('halfOpen', () => {
-  console.info('🔄 Circuit Breaker HALF-OPEN - Testing if payment service recovered');
+  console.info('[INFO] Circuit Breaker HALF-OPEN - Testing if payment service recovered');
 });
 
 paymentCircuitBreaker.on('close', () => {
-  console.info('✅ Circuit Breaker CLOSED - Payment service is healthy again');
+  console.info('[OK] Circuit Breaker CLOSED - Payment service is healthy again');
 });
 
 paymentCircuitBreaker.on('success', (result) => {
-  console.log(`✅ Payment processed successfully: ${result.transaction_id}`);
+  console.log(`[OK] Payment processed successfully: ${result.transaction_id}`);
 });
 
 paymentCircuitBreaker.on('failure', (error) => {
-  console.error(`❌ Payment processing failed: ${error.message}`);
+  console.error(`[ERROR] Payment processing failed: ${error.message}`);
 });
 
 paymentCircuitBreaker.on('timeout', () => {
-  console.error('⏱️  Payment processing timeout exceeded');
+  console.error('[TIMEOUT]  Payment processing timeout exceeded');
 });
 
 paymentCircuitBreaker.on('fallback', (result) => {
-  console.info('🔄 Fallback triggered, returning cached/default response');
+  console.info('[INFO] Fallback triggered, returning cached/default response');
 });
 
 paymentCircuitBreaker.on('reject', () => {
-  console.warn('🚫 Request rejected - Circuit is OPEN');
+  console.warn('[BLOCKED] Request rejected - Circuit is OPEN');
 });
 
 // Función de fallback: qué hacer cuando el circuito está abierto
 paymentCircuitBreaker.fallback((paymentData) => {
-  console.warn('📋 Using fallback: queuing payment for later processing');
+  console.warn('[FALLBACK] Using fallback: queuing payment for later processing');
   
   // En un sistema real, aquí podrías:
   // 1. Encolar el pago en una cola de mensajes (RabbitMQ, Redis Queue)
@@ -169,7 +169,7 @@ function getCircuitBreakerStatus() {
  */
 function resetCircuitBreaker() {
   paymentCircuitBreaker.close();
-  console.info('🔧 Circuit Breaker manually reset to CLOSED state');
+  console.info('[INFO] Circuit Breaker manually reset to CLOSED state');
 }
 
 module.exports = {

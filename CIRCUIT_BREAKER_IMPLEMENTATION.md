@@ -1,25 +1,25 @@
-# ✅ Implementación del Patrón Circuit Breaker - Completada
+# [OK] Implementación del Patrón Circuit Breaker - Completada
 
-## 📦 Archivos Creados
+## ARCHIVOS Archivos Creados
 
 ### Implementación del patrón
-- ✅ `backend/patterns/circuit-breaker/paymentCircuitBreaker.js` - Implementación principal con opossum
-- ✅ `backend/routes/index.routes.js` - Rutas actualizadas con integración del Circuit Breaker
+- [OK] `backend/patterns/circuit-breaker/paymentCircuitBreaker.js` - Implementación principal con opossum
+- [OK] `backend/routes/index.routes.js` - Rutas actualizadas con integración del Circuit Breaker
 
 ### Documentación
-- ✅ `backend/patterns/circuit-breaker/README.md` - Documentación completa del patrón
-- ✅ `backend/patterns/circuit-breaker/circuit-breaker-states.puml` - Diagrama de estados
-- ✅ `backend/patterns/circuit-breaker/circuit-breaker-sequence.puml` - Diagrama de secuencia
+- [OK] `backend/patterns/circuit-breaker/README.md` - Documentación completa del patrón
+- [OK] `backend/patterns/circuit-breaker/circuit-breaker-states.puml` - Diagrama de estados
+- [OK] `backend/patterns/circuit-breaker/circuit-breaker-sequence.puml` - Diagrama de secuencia
 
 ### Testing y Demos
-- ✅ `backend/patterns/circuit-breaker/test-circuit-breaker.js` - Test standalone
-- ✅ `demo-circuit-breaker.sh` - Script de demostración para Linux/Mac
-- ✅ `demo-circuit-breaker.ps1` - Script de demostración para Windows
+- [OK] `backend/patterns/circuit-breaker/test-circuit-breaker.js` - Test standalone
+- [OK] `demo-circuit-breaker.sh` - Script de demostración para Linux/Mac
+- [OK] `demo-circuit-breaker.ps1` - Script de demostración para Windows
 
 ### Dependencias
-- ✅ `opossum` instalado en package.json
+- [OK] `opossum` instalado en package.json
 
-## 🎯 Características Implementadas
+## OBJETIVO Características Implementadas
 
 ### 1. Estados del Circuit Breaker
 - **CLOSED**: Funcionamiento normal, todas las peticiones pasan
@@ -52,14 +52,14 @@ Resetea manualmente el Circuit Breaker a estado CLOSED (para admins).
 
 ### 4. Funcionalidades de Monitoreo
 - Logs detallados de eventos:
-  - ⚠️ Circuito abierto
-  - ✅ Circuito cerrado
-  - 🔄 Estado HALF_OPEN
-  - ✅ Pagos exitosos
-  - ❌ Pagos fallidos
-  - ⏱️ Timeouts
-  - 🔄 Fallbacks activados
-  - 🚫 Peticiones rechazadas
+  - [WARNING] Circuito abierto
+  - [OK] Circuito cerrado
+  - [INFO] Estado HALF_OPEN
+  - [OK] Pagos exitosos
+  - [ERROR] Pagos fallidos
+  - [TIMEOUT] Timeouts
+  - [INFO] Fallbacks activados
+  - [BLOCKED] Peticiones rechazadas
 
 ### 5. Fallback
 Cuando el circuito está abierto:
@@ -68,14 +68,14 @@ Cuando el circuito está abierto:
 - HTTP 202 Accepted
 - Mensaje informativo para el cliente
 
-## 🧪 Pruebas Realizadas
+## PRUEBAS Pruebas Realizadas
 
-✅ Test standalone ejecutado exitosamente
-✅ Verificación de sintaxis de todos los archivos
-✅ Integración con las rutas existentes
-✅ Fallback activado correctamente
+[OK] Test standalone ejecutado exitosamente
+[OK] Verificación de sintaxis de todos los archivos
+[OK] Integración con las rutas existentes
+[OK] Fallback activado correctamente
 
-## 🚀 Cómo Probar
+## COMO USAR Cómo Probar
 
 ### Opción 1: Test Standalone (sin levantar servidor)
 ```bash
@@ -106,40 +106,40 @@ curl -X POST http://localhost:3000/payments \
 curl -X POST http://localhost:3000/payments/circuit-reset
 ```
 
-## 📊 Beneficios Demostrados
+## BENEFICIOS Beneficios Demostrados
 
-1. **Protección contra fallos en cascada** ✅
+1. **Protección contra fallos en cascada** [OK]
    - El sistema continúa funcionando aunque el servicio de pagos falle
 
-2. **Fail-fast** ✅
+2. **Fail-fast** [OK]
    - Las peticiones se rechazan inmediatamente cuando el servicio está caído
    - No se desperdician recursos esperando timeouts
 
-3. **Auto-recuperación** ✅
+3. **Auto-recuperación** [OK]
    - El circuito prueba automáticamente si el servicio se recuperó
    - Transición OPEN → HALF_OPEN → CLOSED
 
-4. **Fallback** ✅
+4. **Fallback** [OK]
    - Proporciona respuesta alternativa (encolar pagos)
    - Mejor experiencia de usuario
 
-5. **Observabilidad** ✅
+5. **Observabilidad** [OK]
    - Estadísticas detalladas disponibles en tiempo real
    - Logs informativos de todos los eventos
 
-6. **Mejora la disponibilidad** ✅
+6. **Mejora la disponibilidad** [OK]
    - El sistema permanece operativo aunque dependencias fallen
    - Cumple con el NFR de disponibilidad del proyecto
 
-## 🔗 Integración con el Proyecto
+## INTEGRACION Integración con el Proyecto
 
 El Circuit Breaker se integra perfectamente con:
-- ✅ Las rutas existentes en `index.routes.js`
-- ✅ El sistema de validación con `express-validator`
-- ✅ El manejo de errores centralizado
-- ✅ La arquitectura de servicios del proyecto
+- [OK] Las rutas existentes en `index.routes.js`
+- [OK] El sistema de validación con `express-validator`
+- [OK] El manejo de errores centralizado
+- [OK] La arquitectura de servicios del proyecto
 
-## 📝 Próximos Pasos (Opcional)
+## NOTAS Próximos Pasos (Opcional)
 
 Para mejorar aún más la implementación, se podría:
 
@@ -159,7 +159,7 @@ Para mejorar aún más la implementación, se podría:
    - Guardar estadísticas históricas en base de datos
    - Análisis de tendencias
 
-## 👥 Créditos
+## CREDITOS Créditos
 
 **Implementado por:** Martina Guzmán  
 **Proyecto:** Salto Hotel & Casino API  
@@ -169,4 +169,4 @@ Para mejorar aún más la implementación, se podría:
 
 ---
 
-**Patrón Circuit Breaker implementado y probado exitosamente ✅**
+**Patrón Circuit Breaker implementado y probado exitosamente [OK]**

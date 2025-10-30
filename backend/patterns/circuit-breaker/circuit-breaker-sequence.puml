@@ -52,7 +52,7 @@ activate PS
 PS --> CB: Error (fallo #5)
 deactivate PS
 CB -> CB: failures >= 50%
-CB -> CB: ⚠️ ABRIR CIRCUITO
+CB -> CB: [WARNING] ABRIR CIRCUITO
 note right: Estado cambia:\nCLOSED → OPEN
 CB --> API: Error
 deactivate CB
@@ -67,7 +67,7 @@ API -> CB: fire(paymentData)
 activate CB
 
 CB -> CB: Verificar estado
-note right: Estado: OPEN\n🚫 Rechazar inmediatamente
+note right: Estado: OPEN\n[BLOCKED] Rechazar inmediatamente
 
 CB -> CB: Activar fallback
 CB -> Queue: Encolar pago
@@ -96,7 +96,7 @@ API -> CB: fire(paymentData)
 activate CB
 
 CB -> CB: Verificar estado
-note right: Estado: HALF_OPEN\n🔄 Permitir 1 prueba
+note right: Estado: HALF_OPEN\n[TESTING] Permitir 1 prueba
 
 CB -> PS: processPayment()
 activate PS
@@ -104,7 +104,11 @@ activate PS
 alt Prueba exitosa
     PS --> CB: Payment OK
     deactivate PS
-    CB -> CB: ✅ CERRAR CIRCUITO
+    Gateway --> CB: SUCCESS { transaction_id, status }
+    deactivate Gateway
+    
+    CB -> CB: [OK] CERRAR CIRCUITO
+    activate CB #green
     note right: HALF_OPEN → CLOSED\nServicio recuperado
     CB --> API: paymentResult
     deactivate CB
@@ -114,7 +118,7 @@ alt Prueba exitosa
 else Prueba falla
     PS --> CB: Error
     deactivate PS
-    CB -> CB: ❌ ABRIR CIRCUITO
+    CB -> CB: [ERROR] ABRIR CIRCUITO
     note right: HALF_OPEN → OPEN\nServicio aún caído
     CB -> Queue: Encolar pago
     activate Queue

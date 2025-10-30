@@ -1,0 +1,69 @@
+@startuml gateway-offloading-deployment
+!define ICONURL https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v2.4.0
+!include ICONURL/common.puml
+!include ICONURL/font-awesome-5/user.puml
+!include ICONURL/font-awesome-5/shield_alt.puml
+!include ICONURL/font-awesome-5/server.puml
+
+title Gateway Offloading Pattern - Despliegue y Flujo de Seguridad
+
+node "Internet / Cliente" {
+    actor Cliente as client
+}
+
+rectangle "DMZ (Zona Desmilitarizada)" as dmz #LightBlue {
+    component "Nginx Reverse Proxy\n<b>Gateway Offloading</b>" as nginx {
+        [Rate Limiting\n10 req/s general\n5 req/s auth] as rate
+        [SSL/TLS Termination\nTLSv1.2/1.3] as ssl
+        [Request Logging\nAccess + Error logs] as logging
+        [CORS Handling\nCross-Origin] as cors
+        [Compresión gzip\nReduce bandwidth] as gzip
+        [Security Headers\nX-Frame, CSP, etc] as headers
+        [Connection Pooling\nKeep-alive] as pool
+    }
+}
+
+rectangle "Red Interna\n(Protegida)" as internal #LightGreen {
+    component "Backend Services" as backend {
+        [Booking API\n:3000] as booking
+        [Payment API\n:3000] as payment
+        [Auth API\n:3000] as auth
+    }
+    
+    database "PostgreSQL\n:5432" as db
+}
+
+client -down-> nginx : HTTPS\n(443)
+nginx -down-> backend : HTTP\n(interno, sin SSL)
+backend -right-> db : TCP 5432
+
+note right of nginx
+  <b>Funciones Offloaded:</b>
+  • TLS termination (SSL)
+  • Rate limiting por IP/ruta
+  • Logging centralizado
+  • Compression (gzip)
+  • CORS policy enforcement
+  • Security headers injection
+  • Basic authentication
+  • Request buffering
+  • Connection pooling
+  
+  <b>Beneficios:</b>
+  - Backend más simple
+  - Menor carga en servicios
+  - Escalabilidad mejorada
+  - Seguridad centralizada
+end note
+
+note bottom of backend
+  Backend solo maneja
+  lógica de negocio,
+  sin preocuparse por:
+  - SSL/TLS
+  - Rate limits
+  - CORS
+  - Compresión
+end note
+
+@enduml

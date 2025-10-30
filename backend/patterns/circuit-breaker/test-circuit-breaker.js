@@ -12,13 +12,13 @@ const {
   getCircuitBreakerStatus 
 } = require('./paymentCircuitBreaker');
 
-console.log('🧪 Test del Circuit Breaker');
+console.log('[TEST] Test del Circuit Breaker');
 console.log('===========================\n');
 
 // Función para mostrar el estado actual
 function showStatus() {
   const status = getCircuitBreakerStatus();
-  console.log(`\n📊 Estado actual: ${status.state}`);
+  console.log(`\n[STATUS] Estado actual: ${status.state}`);
   console.log(`   Peticiones totales: ${status.stats.fires}`);
   console.log(`   Éxitos: ${status.stats.successes}`);
   console.log(`   Fallos: ${status.stats.failures}`);
@@ -41,12 +41,12 @@ async function sendPayment(id) {
     });
 
     if (result.queued) {
-      console.log(`⚠️  Pago #${id}: ENCOLADO (fallback) - ${result.status}`);
+      console.log(`[WARNING] Pago #${id}: ENCOLADO (fallback) - ${result.status}`);
     } else {
-      console.log(`✅ Pago #${id}: ${result.status} - TXN: ${result.transaction_id}`);
+      console.log(`[OK] Pago #${id}: ${result.status} - TXN: ${result.transaction_id}`);
     }
   } catch (error) {
-    console.log(`❌ Pago #${id}: ERROR - ${error.message}`);
+    console.log(`[ERROR] Pago #${id}: ERROR - ${error.message}`);
   }
 }
 
@@ -76,7 +76,7 @@ async function runTest() {
   const status = getCircuitBreakerStatus();
   
   if (status.state === 'OPEN') {
-    console.log('✅ El circuito se ABRIÓ correctamente debido a los fallos.');
+    console.log('[OK] El circuito se ABRIÓ correctamente debido a los fallos.');
     console.log('   Las siguientes peticiones usarán el fallback.\n');
     
     // Enviar más peticiones que deberían usar fallback
@@ -88,7 +88,7 @@ async function runTest() {
     
     showStatus();
     
-    console.log('\n⏱️  Normalmente, después de 60 segundos, el circuito');
+    console.log('\n[TIMEOUT]  Normalmente, después de 60 segundos, el circuito');
     console.log('   pasaría a estado HALF_OPEN para probar si el servicio');
     console.log('   se recuperó.\n');
     
@@ -121,7 +121,7 @@ async function runTest() {
     console.log(`  Fallbacks activados: ${finalStatus.stats.fallbacks}`);
   }
   
-  console.log('\n✅ Test completado!\n');
+  console.log('\n[OK] Test completado!\n');
   
   console.log('Conclusiones:');
   console.log('- El Circuit Breaker protege contra fallos en cascada');

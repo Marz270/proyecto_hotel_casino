@@ -11,26 +11,27 @@ skinparam state {
 
 [*] --> Closed : Inicio del sistema
 
-state Closed <<closed>> {
-  Closed : ✅ Estado normal
-  Closed : • Todas las peticiones pasan
-  Closed : • Contabiliza éxitos y fallos
-  Closed : • Calcula % de error
+state Closed {
+  Closed : [ESTADO NORMAL]
+  Closed : Estado normal
+  Closed : Todas las peticiones pasan
+  Closed : Monitorea tasa de fallos
 }
 
-state Open <<open>> {
-  Open : 🚫 Circuito abierto
-  Open : • Rechaza peticiones inmediatamente
-  Open : • Activa función fallback
-  Open : • No intenta conectar al servicio
-  Open : • Temporizador activo (60s)
+state Open {
+  Open : [PROTECCIÓN ACTIVA]
+  Open : Circuito abierto
+  Open : Rechaza peticiones inmediatamente
+  Open : Activa fallback
+  Open : Espera timeout de reset
 }
 
-state HalfOpen <<halfopen>> {
-  HalfOpen : 🔄 Estado de prueba
-  HalfOpen : • Permite 1 petición de prueba
-  HalfOpen : • Evalúa si el servicio se recuperó
-  HalfOpen : • Decide siguiente estado
+state HalfOpen {
+  HalfOpen : [PROBANDO RECUPERACIÓN]
+  HalfOpen : Estado de prueba
+  HalfOpen : Permite 1 petición de prueba
+  HalfOpen : Si éxito -> CLOSED
+  HalfOpen : Si fallo -> OPEN
 }
 
 Closed --> Open : Fallos >= 50%\nen ventana de 10s

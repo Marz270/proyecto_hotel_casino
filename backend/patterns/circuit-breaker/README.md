@@ -1,10 +1,10 @@
 # Circuit Breaker Pattern - Implementación
 
-## 📋 Descripción
+## Descripción
 
 El patrón Circuit Breaker está implementado en el sistema de procesamiento de pagos del backend. Protege al sistema de fallos en cascada cuando el servicio de pagos externo experimenta problemas.
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 ### Estados del Circuit Breaker
 
@@ -36,7 +36,7 @@ El patrón Circuit Breaker está implementado en el sistema de procesamiento de 
 - **Timeout de reset**: 60 segundos (para pasar a HALF_OPEN)
 - **Volumen mínimo**: 5 peticiones antes de evaluar
 
-## 📁 Archivos
+## Archivos
 
 ### Backend
 
@@ -56,7 +56,7 @@ demo-circuit-breaker.sh     # Script Bash para Linux/Mac
 demo-circuit-breaker.ps1    # Script PowerShell para Windows
 ```
 
-## 🚀 Uso
+## Uso
 
 ### API Endpoints
 
@@ -75,7 +75,7 @@ Content-Type: application/json
 
 **Respuestas posibles:**
 
-**✅ Pago exitoso (circuito CLOSED):**
+**Pago exitoso (circuito CLOSED):**
 ```json
 {
   "success": true,
@@ -93,7 +93,7 @@ Content-Type: application/json
 }
 ```
 
-**⚠️ Pago encolado (circuito OPEN, fallback activado):**
+**Pago encolado (circuito OPEN, fallback activado):**
 ```json
 {
   "success": true,
@@ -166,7 +166,7 @@ POST /payments/circuit-reset
 }
 ```
 
-## 🧪 Demostración
+## Demostración
 
 ### Opción 1: Usando el script automatizado
 
@@ -218,30 +218,30 @@ curl -X POST http://localhost:3000/payments \
 curl -X POST http://localhost:3000/payments/circuit-reset
 ```
 
-## 📊 Monitoreo y Logs
+## Monitoreo y Logs
 
 El Circuit Breaker emite eventos que se registran en la consola:
 
 ```
-⚠️  Circuit Breaker OPENED - Payment service appears to be down
+[WARNING] Circuit Breaker OPENED - Payment service appears to be down
    Subsequent requests will fail fast without attempting payment processing
 
-🔄 Circuit Breaker HALF-OPEN - Testing if payment service recovered
+[INFO] Circuit Breaker HALF-OPEN - Testing if payment service recovered
 
-✅ Circuit Breaker CLOSED - Payment service is healthy again
+[OK] Circuit Breaker CLOSED - Payment service is healthy again
 
-✅ Payment processed successfully: TXN_1234567890
+[OK] Payment processed successfully: TXN_1234567890
 
-❌ Payment processing failed: Payment gateway temporarily unavailable
+[ERROR] Payment processing failed: Payment gateway temporarily unavailable
 
-⏱️  Payment processing timeout exceeded
+[TIMEOUT] Payment processing timeout exceeded
 
-🔄 Fallback triggered, returning cached/default response
+[INFO] Fallback triggered, returning cached/default response
 
-🚫 Request rejected - Circuit is OPEN
+[WARNING] Request rejected - Circuit is OPEN
 ```
 
-## 🎯 Beneficios
+## Beneficios
 
 1. **Protección contra fallos en cascada**: Evita que fallos del servicio de pagos afecten toda la aplicación
 2. **Fail-fast**: Rechaza peticiones rápidamente cuando el servicio está caído, liberando recursos
@@ -250,7 +250,7 @@ El Circuit Breaker emite eventos que se registran en la consola:
 5. **Observabilidad**: Estadísticas detalladas sobre éxito, fallos, latencia y percentiles
 6. **Mejora la experiencia del usuario**: Respuestas rápidas en lugar de timeouts largos
 
-## 🔧 Configuración avanzada
+## Configuración avanzada
 
 Puedes ajustar la configuración del Circuit Breaker editando:
 
@@ -267,13 +267,13 @@ const circuitBreakerOptions = {
 };
 ```
 
-## 📚 Referencias
+## Referencias
 
 - Patrón Circuit Breaker: [Martin Fowler](https://martinfowler.com/bliki/CircuitBreaker.html)
 - Librería Opossum: [GitHub](https://github.com/nodeshift/opossum)
 - Azure Architecture Patterns: [Circuit Breaker](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker)
 
-## 🔗 Relación con otros patrones
+## Relación con otros patrones
 
 El Circuit Breaker se complementa con:
 

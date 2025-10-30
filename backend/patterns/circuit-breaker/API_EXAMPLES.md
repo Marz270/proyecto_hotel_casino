@@ -291,9 +291,9 @@ Content-Type: application/json
 ## Interpretación de Estadísticas
 
 ### States (Estados)
-- **CLOSED**: Funcionamiento normal ✅
-- **OPEN**: Servicio degradado, usando fallback ⚠️
-- **HALF_OPEN**: Probando recuperación 🔄
+- **CLOSED**: Funcionamiento normal [OK]
+- **OPEN**: Servicio degradado, usando fallback [WARNING]
+- **HALF_OPEN**: Probando recuperación [INFO]
 
 ### Stats (Estadísticas)
 - **fires**: Total de peticiones procesadas

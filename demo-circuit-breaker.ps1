@@ -1,7 +1,7 @@
 # Script de demostración del patrón Circuit Breaker
 # Demuestra cómo el circuit breaker protege el sistema de fallos en cascada
 
-Write-Host "🔧 Demostración del patrón Circuit Breaker" -ForegroundColor Cyan
+Write-Host "Demostración del patrón Circuit Breaker" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -10,7 +10,7 @@ $PAYMENT_ENDPOINT = "$API_URL/payments"
 $STATUS_ENDPOINT = "$API_URL/payments/circuit-status"
 $RESET_ENDPOINT = "$API_URL/payments/circuit-reset"
 
-Write-Host "📊 Paso 1: Verificar estado inicial del Circuit Breaker" -ForegroundColor Yellow
+Write-Host " Paso 1: Verificar estado inicial del Circuit Breaker" -ForegroundColor Yellow
 Write-Host "--------------------------------------------------------" -ForegroundColor Yellow
 try {
     $status = Invoke-RestMethod -Uri $STATUS_ENDPOINT -Method Get
@@ -26,7 +26,10 @@ Write-Host ""
 Read-Host "Presiona Enter para continuar"
 Write-Host ""
 
-Write-Host "✅ Paso 2: Enviar peticiones de pago (algunas fallarán aleatoriamente)" -ForegroundColor Yellow
+Write-Host ""
+Write-Host ""
+
+Write-Host "[STEP 2] Enviar peticiones de pago (algunas fallarán aleatoriamente)" -ForegroundColor Yellow
 Write-Host "-----------------------------------------------------------------------" -ForegroundColor Yellow
 Write-Host "Enviando 15 peticiones de pago..." -ForegroundColor Cyan
 Write-Host ""
@@ -61,8 +64,11 @@ for ($i = 1; $i -le 15; $i++) {
 }
 
 Write-Host ""
-Write-Host "📊 Paso 3: Verificar estado del Circuit Breaker después de los fallos" -ForegroundColor Yellow
-Write-Host "----------------------------------------------------------------------" -ForegroundColor Yellow
+Write-Host ""
+Write-Host ""
+
+Write-Host "[STEP 3] Verificar estado del Circuit Breaker después de los fallos" -ForegroundColor Yellow
+Write-Host "--------------------------------------" -ForegroundColor Yellow
 $status = Invoke-RestMethod -Uri $STATUS_ENDPOINT -Method Get
 $status | ConvertTo-Json -Depth 10
 
@@ -74,8 +80,11 @@ Write-Host ""
 Read-Host "Presiona Enter para continuar"
 Write-Host ""
 
-Write-Host "🚫 Paso 4: Intentar enviar más pagos con el circuito ABIERTO" -ForegroundColor Yellow
-Write-Host "------------------------------------------------------------" -ForegroundColor Yellow
+Write-Host ""
+Write-Host ""
+
+Write-Host "[STEP 4] Intentar enviar más pagos con el circuito ABIERTO" -ForegroundColor Yellow
+Write-Host "--------------------------------------" -ForegroundColor Yellow
 Write-Host "Estas peticiones deberían usar el fallback (encolar pagos)" -ForegroundColor Cyan
 Write-Host ""
 
@@ -105,8 +114,11 @@ for ($i = 16; $i -le 20; $i++) {
 }
 
 Write-Host ""
-Write-Host "📊 Paso 5: Verificar estadísticas finales" -ForegroundColor Yellow
-Write-Host "-----------------------------------------" -ForegroundColor Yellow
+Write-Host ""
+Write-Host ""
+
+Write-Host "[STEP 5] Verificar estadísticas finales" -ForegroundColor Yellow
+Write-Host "--------------------------------------" -ForegroundColor Yellow
 $status = Invoke-RestMethod -Uri $STATUS_ENDPOINT -Method Get
 $status | ConvertTo-Json -Depth 10
 
@@ -122,19 +134,21 @@ Write-Host "  Fallbacks: $($stats.fallbacks)" -ForegroundColor Yellow
 Write-Host "  Latencia promedio: $([math]::Round($stats.latencyMean, 2))ms" -ForegroundColor White
 Write-Host ""
 
-Write-Host "🔄 Paso 6: Información sobre auto-recuperación" -ForegroundColor Yellow
-Write-Host "---------------------------------------------" -ForegroundColor Yellow
-Write-Host "El circuito intentará cerrarse después de 60 segundos (HALF_OPEN)..." -ForegroundColor Cyan
-Write-Host "Puedes resetear manualmente ejecutando:" -ForegroundColor Gray
-Write-Host "  curl -X POST $RESET_ENDPOINT" -ForegroundColor Gray
+Write-Host ""
 Write-Host ""
 
-Write-Host "✅ Demostración completada!" -ForegroundColor Green
+Write-Host "[STEP 6] Información sobre auto-recuperación" -ForegroundColor Yellow
+Write-Host "--------------------------------------" -ForegroundColor Yellow
+Write-Host "El circuito debería pasar a HALF_OPEN después de 60 segundos"
+Write-Host "y probará automáticamente si el servicio se recuperó."
+Write-Host "Revisa los logs del backend para ver las transiciones de estado."
+Write-Host ""
+
+Write-Host "[OK] Demostración completada!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Conclusiones del patrón Circuit Breaker:" -ForegroundColor Cyan
-Write-Host "- ✅ Protege el sistema de fallos en cascada" -ForegroundColor White
-Write-Host "- ⚡ Falla rápido (fail-fast) cuando el servicio externo está caído" -ForegroundColor White
-Write-Host "- 🔄 Se auto-recupera probando periódicamente (HALF_OPEN → CLOSED)" -ForegroundColor White
-Write-Host "- 📋 Proporciona fallback (encolar pagos) cuando el circuito está abierto" -ForegroundColor White
-Write-Host "- 🛡️  Mejora la disponibilidad y resiliencia del sistema" -ForegroundColor White
-Write-Host ""
+Write-Host "- [OK] Protege el sistema de fallos en cascada" -ForegroundColor White
+Write-Host "- [FAST-FAIL] Falla rápido (fail-fast) cuando el servicio externo está caído" -ForegroundColor White
+Write-Host "- [AUTO-RECOVER] Se auto-recupera probando periódicamente (HALF_OPEN -> CLOSED)" -ForegroundColor White
+Write-Host "- [FALLBACK] Proporciona fallback (encolar pagos) cuando el circuito está abierto" -ForegroundColor White
+Write-Host "- [RESILIENCE] Mejora la disponibilidad y resiliencia del sistema" -ForegroundColor White

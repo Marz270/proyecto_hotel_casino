@@ -1,4 +1,4 @@
-# 🔌 Circuit Breaker - Guía de Uso Rápido
+# CIRCUIT BREAKER Circuit Breaker - Guía de Uso Rápido
 
 ## ¿Qué es?
 
@@ -6,9 +6,9 @@ El patrón Circuit Breaker protege tu sistema de fallos en cascada cuando servic
 
 ## Estados
 
-- **🟢 CLOSED**: Todo funciona normal
-- **🔴 OPEN**: Demasiados errores, rechaza peticiones y usa fallback
-- **🟡 HALF_OPEN**: Probando si el servicio se recuperó
+- **OK CLOSED**: Todo funciona normal
+- **ERROR OPEN**: Demasiados errores, rechaza peticiones y usa fallback
+- **WARNING HALF_OPEN**: Probando si el servicio se recuperó
 
 ## Endpoints Nuevos
 
