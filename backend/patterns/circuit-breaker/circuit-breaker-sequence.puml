@@ -1,0 +1,129 @@
+@startuml Circuit Breaker - Flujo de Peticiones
+
+actor Cliente
+participant "API Gateway" as API
+participant "Circuit Breaker" as CB
+participant "Payment Service" as PS
+database "Fallback Queue" as Queue
+
+== Estado CLOSED (Normal) ==
+
+Cliente -> API: POST /payments
+activate API
+
+API -> CB: fire(paymentData)
+activate CB
+
+CB -> CB: Verificar estado
+note right: Estado: CLOSED\nPeticiones pasan
+
+CB -> PS: processPayment()
+activate PS
+
+alt Pago exitoso
+    PS --> CB: Payment OK
+    deactivate PS
+    CB -> CB: Incrementar successes
+    CB --> API: paymentResult
+    deactivate CB
+    API --> Cliente: 201 Created\n{status: "approved"}
+    deactivate API
+    
+else Pago falla (< 50% errores)
+    PS --> CB: Error
+    deactivate PS
+    CB -> CB: Incrementar failures
+    CB -> CB: Verificar umbral
+    note right: Fallos < 50%\nPermanecer CLOSED
+    CB --> API: Error
+    deactivate CB
+    API --> Cliente: 500 Error
+    deactivate API
+end
+
+== Acumulación de Errores ==
+
+Cliente -> API: POST /payments
+activate API
+API -> CB: fire(paymentData)
+activate CB
+CB -> PS: processPayment()
+activate PS
+PS --> CB: Error (fallo #5)
+deactivate PS
+CB -> CB: failures >= 50%
+CB -> CB: ⚠️ ABRIR CIRCUITO
+note right: Estado cambia:\nCLOSED → OPEN
+CB --> API: Error
+deactivate CB
+API --> Cliente: 500 Error
+deactivate API
+
+== Estado OPEN (Circuito Abierto) ==
+
+Cliente -> API: POST /payments
+activate API
+API -> CB: fire(paymentData)
+activate CB
+
+CB -> CB: Verificar estado
+note right: Estado: OPEN\n🚫 Rechazar inmediatamente
+
+CB -> CB: Activar fallback
+CB -> Queue: Encolar pago
+activate Queue
+Queue --> CB: OK
+deactivate Queue
+
+CB --> API: Fallback result\n{status: "pending", queued: true}
+deactivate CB
+
+API --> Cliente: 202 Accepted\n{queued: true,\nmessage: "Payment queued"}
+deactivate API
+
+note over CB
+  Timer de 60s iniciado
+  Después: OPEN → HALF_OPEN
+end note
+
+== Estado HALF_OPEN (Prueba) ==
+
+...60 segundos después...
+
+Cliente -> API: POST /payments
+activate API
+API -> CB: fire(paymentData)
+activate CB
+
+CB -> CB: Verificar estado
+note right: Estado: HALF_OPEN\n🔄 Permitir 1 prueba
+
+CB -> PS: processPayment()
+activate PS
+
+alt Prueba exitosa
+    PS --> CB: Payment OK
+    deactivate PS
+    CB -> CB: ✅ CERRAR CIRCUITO
+    note right: HALF_OPEN → CLOSED\nServicio recuperado
+    CB --> API: paymentResult
+    deactivate CB
+    API --> Cliente: 201 Created
+    deactivate API
+    
+else Prueba falla
+    PS --> CB: Error
+    deactivate PS
+    CB -> CB: ❌ ABRIR CIRCUITO
+    note right: HALF_OPEN → OPEN\nServicio aún caído
+    CB -> Queue: Encolar pago
+    activate Queue
+    Queue --> CB: OK
+    deactivate Queue
+    CB --> API: Fallback result
+    deactivate CB
+    API --> Cliente: 202 Accepted
+    deactivate API
+end
+
+@enduml

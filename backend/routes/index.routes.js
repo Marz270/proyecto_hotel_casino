@@ -1,6 +1,11 @@
 const express = require("express");
 const { body, param, validationResult } = require("express-validator");
 const BookingServiceFactory = require("../services/bookingServiceFactory");
+const { 
+  paymentCircuitBreaker, 
+  getCircuitBreakerStatus,
+  resetCircuitBreaker 
+} = require("../patterns/circuit-breaker/paymentCircuitBreaker");
 const router = express.Router();
 
 // Inyección de dependencia - el servicio se resuelve en runtime
@@ -31,7 +36,9 @@ router.get("/", (req, res) => {
         "GET /rooms": "Get available rooms",
         "GET /bookings": "Get all reservations",
         "POST /reservations": "Create new reservation",
-        "POST /payments": "Process payment",
+        "POST /payments": "Process payment (with Circuit Breaker)",
+        "GET /payments/circuit-status": "Get Circuit Breaker status",
+        "POST /payments/circuit-reset": "Reset Circuit Breaker (admin)",
         "GET /reports": "Get admin reports",
         "GET /bookings/:id": "Get booking by ID",
         "DELETE /bookings/:id": "Delete booking by ID",
@@ -273,7 +280,7 @@ router.post(
   }
 );
 
-// POST /payments - Procesar pago
+// POST /payments - Procesar pago con Circuit Breaker
 router.post(
   "/payments",
   [
@@ -292,31 +299,81 @@ router.post(
     try {
       const { reservation_id, amount, payment_method } = req.body;
 
-      // Simular procesamiento de pago
-      const paymentResult = {
-        id: Math.floor(Math.random() * 10000),
+      // Procesar pago a través del Circuit Breaker
+      // El circuit breaker protege de fallos en cascada del servicio de pagos
+      const paymentResult = await paymentCircuitBreaker.fire({
         reservation_id,
         amount,
         payment_method,
-        status: "approved",
-        transaction_id: `TXN_${Date.now()}`,
-        processed_at: new Date().toISOString(),
-      };
+      });
 
+      // Si el pago está en cola (fallback), responder con 202 Accepted
+      if (paymentResult.queued) {
+        return res.status(202).json({
+          success: true,
+          data: paymentResult,
+          message: paymentResult.message,
+          warning: "Payment service is temporarily unavailable. Payment queued for processing.",
+        });
+      }
+
+      // Pago procesado exitosamente
       res.status(201).json({
         success: true,
         data: paymentResult,
         message: "Payment processed successfully",
       });
     } catch (error) {
+      // Error no manejado por el circuit breaker
+      console.error("Payment error:", error);
+      
       res.status(500).json({
         success: false,
         error: "Payment processing failed",
         details: error.message,
+        code: error.code || "PAYMENT_ERROR",
       });
     }
   }
 );
+
+// GET /payments/circuit-status - Obtener estado del Circuit Breaker
+router.get("/payments/circuit-status", (req, res) => {
+  try {
+    const status = getCircuitBreakerStatus();
+    
+    res.json({
+      success: true,
+      data: status,
+      message: "Circuit Breaker status retrieved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to get circuit breaker status",
+      details: error.message,
+    });
+  }
+});
+
+// POST /payments/circuit-reset - Resetear Circuit Breaker manualmente (admin)
+router.post("/payments/circuit-reset", (req, res) => {
+  try {
+    resetCircuitBreaker();
+    
+    res.json({
+      success: true,
+      message: "Circuit Breaker reset to CLOSED state",
+      data: getCircuitBreakerStatus(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to reset circuit breaker",
+      details: error.message,
+    });
+  }
+});
 
 // GET /reports - Obtener reportes administrativos
 router.get("/reports", async (req, res) => {

@@ -1,0 +1,62 @@
+@startuml Circuit Breaker - Diagrama de Estados
+
+' Definir colores para los estados
+skinparam state {
+  BackgroundColor<<closed>> LightGreen
+  BackgroundColor<<open>> LightCoral
+  BackgroundColor<<halfopen>> LightYellow
+  BorderColor Black
+  FontSize 14
+}
+
+[*] --> Closed : Inicio del sistema
+
+state Closed <<closed>> {
+  Closed : ✅ Estado normal
+  Closed : • Todas las peticiones pasan
+  Closed : • Contabiliza éxitos y fallos
+  Closed : • Calcula % de error
+}
+
+state Open <<open>> {
+  Open : 🚫 Circuito abierto
+  Open : • Rechaza peticiones inmediatamente
+  Open : • Activa función fallback
+  Open : • No intenta conectar al servicio
+  Open : • Temporizador activo (60s)
+}
+
+state HalfOpen <<halfopen>> {
+  HalfOpen : 🔄 Estado de prueba
+  HalfOpen : • Permite 1 petición de prueba
+  HalfOpen : • Evalúa si el servicio se recuperó
+  HalfOpen : • Decide siguiente estado
+}
+
+Closed --> Open : Fallos >= 50%\nen ventana de 10s
+Open --> HalfOpen : Transcurrieron\n60 segundos
+HalfOpen --> Closed : Petición de\nprueba exitosa
+HalfOpen --> Open : Petición de\nprueba falla
+
+note right of Closed
+  **Configuración:**
+  • Umbral: 50% de fallos
+  • Ventana: 10 segundos
+  • Volumen mínimo: 5 peticiones
+end note
+
+note right of Open
+  **Fallback activo:**
+  • Status: pending
+  • Encolar pago
+  • HTTP 202 Accepted
+end note
+
+note right of HalfOpen
+  **Auto-recuperación:**
+  • Timeout: 60 segundos
+  • 1 intento de prueba
+  • Si OK → CLOSED
+end note
+
+@enduml
