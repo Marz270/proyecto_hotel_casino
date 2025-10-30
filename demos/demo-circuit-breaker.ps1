@@ -35,7 +35,7 @@ Write-Host "Enviando 15 peticiones de pago..." -ForegroundColor Cyan
 Write-Host ""
 
 for ($i = 1; $i -le 15; $i++) {
-    Write-Host "Petición #$i:" -ForegroundColor White
+    Write-Host "Peticion #${i}:" -ForegroundColor White
     
     $body = @{
         reservation_id = $i
@@ -89,7 +89,7 @@ Write-Host "Estas peticiones deberían usar el fallback (encolar pagos)" -Foregr
 Write-Host ""
 
 for ($i = 16; $i -le 20; $i++) {
-    Write-Host "Petición #$i:" -ForegroundColor White
+    Write-Host "Peticion #${i}:" -ForegroundColor White
     
     $body = @{
         reservation_id = $i

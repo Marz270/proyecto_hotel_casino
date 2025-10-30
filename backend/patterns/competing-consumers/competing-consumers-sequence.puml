@@ -1,0 +1,199 @@
+@startuml competing-consumers-sequence
+!theme plain
+
+title Competing Consumers Pattern - Sequence Diagram
+
+actor "Client" as Client
+participant "API" as API
+participant "Task Queue" as Queue
+participant "Worker 1" as W1
+participant "Worker 2" as W2
+participant "Worker 3" as W3
+participant "Email Service" as Email
+participant "Payment Service" as Payment
+
+== Task Enqueueing ==
+
+Client -> API: POST /queue/tasks\n{type: "email", data: {...}}
+activate API
+API -> Queue: enqueue(task1)
+activate Queue
+Queue --> API: task1 enqueued
+deactivate Queue
+API --> Client: 201 Created\n{task: {id: "task-123", status: "pending"}}
+deactivate API
+
+Client -> API: POST /queue/tasks\n{type: "payment", data: {...}}
+activate API
+API -> Queue: enqueue(task2)
+activate Queue
+Queue --> API: task2 enqueued
+deactivate Queue
+API --> Client: 201 Created\n{task: {id: "task-456", status: "pending"}}
+deactivate API
+
+Client -> API: POST /queue/tasks\n{type: "email", data: {...}}
+activate API
+API -> Queue: enqueue(task3)
+activate Queue
+Queue --> API: task3 enqueued
+deactivate Queue
+API --> Client: 201 Created\n{task: {id: "task-789", status: "pending"}}
+deactivate API
+
+== Workers Start (Competing for Tasks) ==
+
+Client -> API: POST /queue/workers/start
+activate API
+API -> W1: start()
+API -> W2: start()
+API -> W3: start()
+API --> Client: Workers started
+deactivate API
+
+note over W1, W3
+    Workers poll queue concurrently
+    at different intervals:
+    W1: every 2000ms
+    W2: every 2500ms
+    W3: every 3000ms
+end note
+
+== Parallel Task Processing ==
+
+group Worker 1 processes task1
+    W1 -> Queue: dequeue()
+    activate Queue
+    Queue --> W1: task1 (email)
+    deactivate Queue
+    Queue -> Queue: setProcessing(W1, task1)
+    
+    W1 -> Email: processEmailTask(task1)
+    activate Email
+    note right: Sending email...\n(2-4 seconds)
+    Email --> W1: Email sent successfully
+    deactivate Email
+    
+    W1 -> Queue: markCompleted(task1, W1, result)
+    activate Queue
+    Queue -> Queue: processing.delete(W1)
+    Queue -> Queue: completed.push(task1)
+    deactivate Queue
+end
+
+group Worker 2 processes task2 (concurrent with W1)
+    W2 -> Queue: dequeue()
+    activate Queue
+    Queue --> W2: task2 (payment)
+    deactivate Queue
+    Queue -> Queue: setProcessing(W2, task2)
+    
+    W2 -> Payment: processPaymentTask(task2)
+    activate Payment
+    note right: Processing payment...\n(2-4 seconds)
+    Payment --> W2: Payment processed
+    deactivate Payment
+    
+    W2 -> Queue: markCompleted(task2, W2, result)
+    activate Queue
+    Queue -> Queue: processing.delete(W2)
+    Queue -> Queue: completed.push(task2)
+    deactivate Queue
+end
+
+group Worker 3 processes task3 (concurrent with W1 and W2)
+    W3 -> Queue: dequeue()
+    activate Queue
+    Queue --> W3: task3 (email)
+    deactivate Queue
+    Queue -> Queue: setProcessing(W3, task3)
+    
+    W3 -> Email: processEmailTask(task3)
+    activate Email
+    note right: Sending email...\n(2-4 seconds)
+    Email --> W3: Email sent successfully
+    deactivate Email
+    
+    W3 -> Queue: markCompleted(task3, W3, result)
+    activate Queue
+    Queue -> Queue: processing.delete(W3)
+    Queue -> Queue: completed.push(task3)
+    deactivate Queue
+end
+
+note over W1, W3
+    All 3 tasks processed in ~3-4 seconds
+    vs 9-12 seconds sequential processing
+    
+    3x throughput improvement!
+end note
+
+== Monitoring ==
+
+Client -> API: GET /queue/stats
+activate API
+API -> Queue: getStats()
+activate Queue
+Queue --> API: {pending: 0, processing: 0,\ncompleted: 3, failed: 0,\nsuccessRate: "100%"}
+deactivate Queue
+API --> Client: Statistics
+deactivate API
+
+== Batch Processing ==
+
+Client -> API: POST /queue/tasks/batch\n{tasks: [10 tasks]}
+activate API
+loop for each task
+    API -> Queue: enqueue(task)
+end
+API --> Client: 10 tasks enqueued
+deactivate API
+
+note over W1, W3
+    Workers automatically pick up
+    and process the 10 tasks
+    concurrently (FIFO order)
+end note
+
+== Failure Scenario ==
+
+group Worker 1 encounters error
+    W1 -> Queue: dequeue()
+    activate Queue
+    Queue --> W1: task-error
+    deactivate Queue
+    
+    W1 -> Email: processEmailTask(task-error)
+    activate Email
+    Email --> W1: ❌ SMTP connection timeout
+    deactivate Email
+    
+    W1 -> Queue: markFailed(task-error, W1, error)
+    activate Queue
+    Queue -> Queue: processing.delete(W1)
+    Queue -> Queue: failed.push(task-error)
+    deactivate Queue
+    
+    note over W2, W3
+        Other workers continue
+        processing unaffected
+        
+        Fault tolerance!
+    end note
+end
+
+== Shutdown ==
+
+Client -> API: POST /queue/workers/stop
+activate API
+API -> W1: stop()
+API -> W2: stop()
+API -> W3: stop()
+note over W1, W3
+    Workers finish current tasks
+    then stop polling
+end note
+API --> Client: Workers stopped\n{W1: 6 tasks, W2: 5 tasks, W3: 4 tasks}
+deactivate API
+
+@enduml

@@ -8,14 +8,15 @@ Write-Host "Gateway Offloading Pattern Demo" -ForegroundColor Blue
 Write-Host "======================================" -ForegroundColor Blue
 Write-Host ""
 
-$API_URL = "http://localhost:80"
-$API_ENDPOINT = "/api/bookings"
+$NGINX_URL = "http://localhost:8080"
+$BACKEND_URL = "http://localhost:3000"
+$API_ENDPOINT = "/bookings"
 
 # Funciones auxiliares
 function Print-Header($text) {
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
+    Write-Host "==========================================" -ForegroundColor Blue
     Write-Host $text -ForegroundColor Blue
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
+    Write-Host "==========================================" -ForegroundColor Blue
 }
 
 function Print-Success($text) {
@@ -30,13 +31,21 @@ function Print-Error($text) {
     Write-Host "[ERROR] $text" -ForegroundColor Red
 }
 
-# Verificar que el servicio esté corriendo
-Print-Header "0. Verificación de Servicios"
+# Verificar que los servicios esten corriendo
+Print-Header "0. Verificacion de Servicios"
 try {
-    $response = Invoke-WebRequest -Uri "$API_URL/health" -UseBasicParsing -ErrorAction Stop
-    Print-Success "API está corriendo en $API_URL"
+    $response = Invoke-WebRequest -Uri "$BACKEND_URL/" -UseBasicParsing -ErrorAction Stop
+    Print-Success "Backend esta corriendo en $BACKEND_URL"
 } catch {
-    Print-Error "API no está accesible. Ejecuta: docker-compose up -d"
+    Print-Error "Backend no esta accesible"
+    exit 1
+}
+
+try {
+    $response = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -UseBasicParsing -ErrorAction Stop
+    Print-Success "Nginx esta corriendo en $NGINX_URL"
+} catch {
+    Print-Error "Nginx no esta accesible. Ejecuta: docker-compose up -d"
     exit 1
 }
 Write-Host ""
@@ -45,7 +54,7 @@ Write-Host ""
 # 1. Probar Rate Limiting
 # ============================================
 Print-Header "1. Rate Limiting (10 req/s)"
-Write-Host "Enviando 20 requests rápidos para disparar rate limit..."
+Write-Host "Enviando 20 requests rapidos para disparar rate limit..."
 Write-Host ""
 
 $successCount = 0
@@ -53,7 +62,7 @@ $rateLimitedCount = 0
 
 for ($i = 1; $i -le 20; $i++) {
     try {
-        $response = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -UseBasicParsing -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -UseBasicParsing -ErrorAction Stop
         Write-Host -NoNewline "."
         $successCount++
     } catch {
@@ -86,7 +95,7 @@ Write-Host "Verificando headers de seguridad..."
 Write-Host ""
 
 try {
-    $response = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -Method Head -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -Method Head -UseBasicParsing
     
     function Check-Header($headerName, $expectedValue) {
         if ($response.Headers.ContainsKey($headerName)) {
@@ -108,29 +117,29 @@ try {
 Write-Host ""
 
 # ============================================
-# 3. Verificar Compresión gzip
+# 3. Verificar Compresion gzip
 # ============================================
-Print-Header "3. Compresión gzip"
-Write-Host "Comparando tamaño de respuesta con/sin compresión..."
+Print-Header "3. Compresion gzip"
+Write-Host "Comparando tamano de respuesta con/sin compresion..."
 Write-Host ""
 
 try {
     # Sin gzip
-    $noGzip = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -Headers @{"Accept-Encoding"="identity"} -UseBasicParsing
+    $noGzip = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -Headers @{"Accept-Encoding"="identity"} -UseBasicParsing
     $sizeNoGzip = $noGzip.Content.Length
-    Print-Warning "Tamaño sin gzip: $sizeNoGzip bytes"
+    Print-Warning "Tamano sin gzip: $sizeNoGzip bytes"
     
     # Con gzip
-    $withGzip = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -UseBasicParsing
+    $withGzip = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -UseBasicParsing
     $sizeGzip = $withGzip.Content.Length
-    Print-Success "Tamaño con gzip: $sizeGzip bytes"
+    Print-Success "Tamano con gzip: $sizeGzip bytes"
     
     if ($sizeNoGzip -gt 0) {
         $reduction = [math]::Round((1 - $sizeGzip / $sizeNoGzip) * 100, 2)
-        Print-Success "Reducción: $reduction%"
+        Print-Success "Reduccion: $reduction%"
     }
 } catch {
-    Print-Warning "Error al medir compresión: $_"
+    Print-Warning "Error al medir compresion: $_"
 }
 
 Write-Host ""
@@ -147,7 +156,7 @@ try {
         "Origin" = "http://frontend.example.com"
         "Access-Control-Request-Method" = "POST"
     }
-    $response = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -Method Options -Headers $headers -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -Method Options -Headers $headers -UseBasicParsing
     
     function Check-CorsHeader($headerName) {
         if ($response.Headers.ContainsKey($headerName)) {
@@ -175,10 +184,10 @@ Write-Host "Verificando que las peticiones se loggean..."
 Write-Host ""
 
 $timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-$testPath = "/api/bookings?test=$timestamp"
+$testPath = "/bookings?test=$timestamp"
 
 try {
-    Invoke-WebRequest -Uri "$API_URL$testPath" -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
+    Invoke-WebRequest -Uri "$NGINX_URL$testPath" -UseBasicParsing -ErrorAction SilentlyContinue | Out-Null
     Start-Sleep -Seconds 1
     
     # Intentar verificar el log
@@ -188,12 +197,12 @@ try {
         
         $logContent = docker-compose exec -T nginx grep $timestamp /var/log/nginx/access.log 2>$null
         if ($LASTEXITCODE -eq 0) {
-            Print-Success "Petición registrada en el log"
+            Print-Success "Peticion registrada en el log"
             Write-Host ""
-            Write-Host "Últimas 3 líneas del log:"
+            Write-Host "Ultimas 3 lineas del log:"
             docker-compose exec -T nginx tail -3 /var/log/nginx/access.log
         } else {
-            Print-Warning "Petición no encontrada en el log"
+            Print-Warning "Peticion no encontrada en el log"
         }
     } else {
         Print-Warning "No se pudo acceder al archivo de log (puede ser normal en algunos setups)"
@@ -212,7 +221,7 @@ Write-Host "Verificando proxy pass al backend..."
 Write-Host ""
 
 try {
-    $response = Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -UseBasicParsing
+    $response = Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -UseBasicParsing
     
     if ($response.Headers.ContainsKey("X-Forwarded-For")) {
         Print-Success "Header X-Forwarded-For presente (proxy funciona)"
@@ -222,7 +231,7 @@ try {
         Print-Success "Header X-Real-IP presente (IP original preservada)"
     }
     
-    Print-Success "Nginx actúa como reverse proxy correctamente"
+    Print-Success "Nginx actua como reverse proxy correctamente"
 } catch {
     Print-Warning "Error al verificar proxy: $_"
 }
@@ -242,7 +251,7 @@ $requests = 10
 for ($i = 1; $i -le $requests; $i++) {
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     try {
-        Invoke-WebRequest -Uri "$API_URL$API_ENDPOINT" -UseBasicParsing -ErrorAction Stop | Out-Null
+        Invoke-WebRequest -Uri "$NGINX_URL$API_ENDPOINT" -UseBasicParsing -ErrorAction Stop | Out-Null
         $stopwatch.Stop()
         $totalTime += $stopwatch.Elapsed.TotalSeconds
         Write-Host -NoNewline "."
@@ -275,11 +284,11 @@ Print-Header "Resumen de Gateway Offloading"
 Write-Host ""
 Write-Host "Funcionalidades verificadas:"
 Write-Host ""
-Write-Host "  - Rate Limiting (protección DDoS)"
+Write-Host "  - Rate Limiting (proteccion DDoS)"
 Write-Host "  - Security Headers (XSS, clickjacking)"
-Write-Host "  - Compresión gzip (reducción bandwidth)"
+Write-Host "  - Compresion gzip (reduccion bandwidth)"
 Write-Host "  - CORS Handling (cross-origin)"
-Write-Host "  - Request Logging (auditoría)"
+Write-Host "  - Request Logging (auditoria)"
 Write-Host "  - Reverse Proxy (connection pooling)"
 Write-Host "  - Performance (tiempos de respuesta)"
 Write-Host ""
@@ -287,10 +296,10 @@ Write-Host ""
 Print-Success "Gateway Offloading Pattern implementado correctamente"
 
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
-Write-Host "Para más información:"
-Write-Host "  - Configuración: nginx/nginx-gateway-offloading.conf"
+Write-Host "==========================================" -ForegroundColor Blue
+Write-Host "Para mas informacion:"
+Write-Host "  - Configuracion: nginx/nginx.conf"
 Write-Host "  - README: backend/patterns/gateway-offloading/README.md"
 Write-Host "  - Logs: docker-compose logs nginx"
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Blue
+Write-Host "==========================================" -ForegroundColor Blue
 Write-Host ""

@@ -1,0 +1,119 @@
+@startuml competing-consumers-architecture
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title Competing Consumers Pattern - Architecture
+
+actor "API Client" as Client
+
+package "REST API Layer" {
+    [Express Server] as API
+    note right of API
+        POST /queue/tasks
+        POST /queue/tasks/batch
+        GET /queue/stats
+        POST /queue/workers/start
+        POST /queue/workers/stop
+        GET /queue/workers
+    end note
+}
+
+package "Queue Management" {
+    [Task Queue] as Queue
+    
+    note right of Queue
+        **In-Memory FIFO Queue**
+        - tasks[]
+        - completed[]
+        - failed[]
+        - processing (Map)
+        
+        **Methods:**
+        - enqueue(task)
+        - dequeue()
+        - markCompleted()
+        - markFailed()
+        - getStats()
+    end note
+}
+
+package "Worker Pool" {
+    [Worker 1\n2000ms polling] as W1
+    [Worker 2\n2500ms polling] as W2
+    [Worker 3\n3000ms polling] as W3
+    
+    note bottom of W1
+        Competing consumers
+        process tasks concurrently
+        from shared queue
+    end note
+}
+
+package "Task Processors" {
+    [Email Service] as EmailProc
+    [Reservation Service] as ReservProc
+    [Payment Service] as PaymentProc
+    [Notification Service] as NotifProc
+}
+
+database "PostgreSQL" as DB
+
+' Connections
+Client --> API : HTTP Request\nPOST /queue/tasks
+API --> Queue : enqueue(task)
+
+Queue <-- W1 : dequeue()
+Queue <-- W2 : dequeue()
+Queue <-- W3 : dequeue()
+
+W1 --> EmailProc : process email
+W1 --> ReservProc : process reservation
+W2 --> PaymentProc : process payment
+W2 --> NotifProc : process notification
+W3 --> EmailProc : process email
+
+EmailProc ..> DB : store result
+ReservProc ..> DB : store result
+PaymentProc ..> DB : store result
+
+W1 --> Queue : markCompleted(task)
+W2 --> Queue : markCompleted(task)
+W3 --> Queue : markCompleted(task)
+
+' Flow labels
+note as FlowNote
+**Processing Flow:**
+1. Client sends task → API
+2. API enqueues task → Queue
+3. Workers poll queue (competing)
+4. First available worker takes task
+5. Worker processes task
+6. Worker marks task as completed
+7. Repeat for next task
+
+**Benefits:**
+✓ Parallel processing
+✓ Horizontal scalability
+✓ Fault tolerance
+✓ Load balancing
+✓ Decoupling
+end note
+
+legend right
+    |<#lightblue> Component |
+    |<#white> = Application layer |
+    |<#palegreen> Queue |
+    |<#white> = Shared task queue |
+    |<#lightyellow> Workers |
+    |<#white> = Concurrent consumers |
+    
+    **Task Types:**
+    - email: Send confirmation emails
+    - reservation: Process bookings
+    - payment: Handle transactions
+    - notification: Send push notifications
+endlegend
+
+@enduml

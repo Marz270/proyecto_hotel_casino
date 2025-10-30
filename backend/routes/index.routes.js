@@ -9,6 +9,10 @@ const {
 } = require("../patterns/circuit-breaker/paymentCircuitBreaker");
 const router = express.Router();
 
+// Competing Consumers Pattern - Queue routes
+const queueRoutes = require("./queue.routes");
+router.use(queueRoutes);
+
 // Inyección de dependencia - el servicio se resuelve en runtime
 const bookingService = BookingServiceFactory.createBookingService();
 
@@ -34,6 +38,7 @@ router.get("/", (req, res) => {
       version: process.env.APP_VERSION || "1.0",
       booking_mode: process.env.BOOKING_MODE || "pg",
       endpoints: {
+        "GET /health": "Health check endpoint",
         "GET /rooms": "Get available rooms",
         "GET /bookings": "Get all reservations",
         "POST /reservations": "Create new reservation",
@@ -45,6 +50,108 @@ router.get("/", (req, res) => {
         "DELETE /bookings/:id": "Delete booking by ID",
       },
     },
+  });
+});
+
+// Health check endpoint - Health Endpoint Monitoring Pattern
+router.get("/health", async (req, res) => {
+  const healthCheck = {
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
+    version: process.env.APP_VERSION || "1.0.0",
+    checks: {
+      database: { status: "unknown" },
+      memory: { status: "unknown" },
+      circuitBreaker: { status: "unknown" },
+    },
+  };
+
+  let isHealthy = true;
+
+  // 1. Check database connection
+  try {
+    const db = require("../database/db");
+    const result = await db.query("SELECT 1 as health");
+
+    if (result.rows && result.rows[0].health === 1) {
+      healthCheck.checks.database = {
+        status: "healthy",
+        responseTime: "< 10ms",
+      };
+    } else {
+      throw new Error("Database check failed");
+    }
+  } catch (error) {
+    isHealthy = false;
+    healthCheck.checks.database = {
+      status: "unhealthy",
+      error: error.message,
+    };
+  }
+
+  // 2. Check memory usage
+  try {
+    const memUsage = process.memoryUsage();
+    const memoryUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+    const memoryTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+    const memoryPercentage = Math.round(
+      (memUsage.heapUsed / memUsage.heapTotal) * 100
+    );
+
+    healthCheck.checks.memory = {
+      status: memoryPercentage < 90 ? "healthy" : "warning",
+      used: `${memoryUsedMB} MB`,
+      total: `${memoryTotalMB} MB`,
+      percentage: `${memoryPercentage}%`,
+    };
+
+    if (memoryPercentage >= 95) {
+      isHealthy = false;
+      healthCheck.checks.memory.status = "unhealthy";
+    }
+  } catch (error) {
+    healthCheck.checks.memory = {
+      status: "unhealthy",
+      error: error.message,
+    };
+  }
+
+  // 3. Check Circuit Breaker status
+  try {
+    const cbStatus = getCircuitBreakerStatus();
+    healthCheck.checks.circuitBreaker = {
+      status: cbStatus.state === "OPEN" ? "degraded" : "healthy",
+      state: cbStatus.state,
+      stats: {
+        totalRequests: cbStatus.stats.fires,
+        failures: cbStatus.stats.failures,
+        successRate: cbStatus.stats.successRate,
+      },
+    };
+
+    // Circuit breaker OPEN no es crítico para health general
+    if (cbStatus.state === "OPEN") {
+      healthCheck.checks.circuitBreaker.message =
+        "Payment service circuit is open (degraded mode)";
+    }
+  } catch (error) {
+    healthCheck.checks.circuitBreaker = {
+      status: "unknown",
+      error: error.message,
+    };
+  }
+
+  // Set overall status
+  healthCheck.status = isHealthy ? "healthy" : "unhealthy";
+
+  // Return appropriate HTTP status code
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isHealthy,
+    data: healthCheck,
   });
 });
 
