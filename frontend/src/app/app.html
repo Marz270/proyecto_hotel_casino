@@ -1,0 +1,54 @@
+<div class="app-container">
+  <!-- Material Toolbar -->
+  <mat-toolbar class="app-toolbar">
+    <img src="SALTO_logo_blanco.svg" alt="Salto Hotel & Casino" class="app-logo" />
+    <span class="toolbar-spacer">Salto Hotel & Casino</span>
+    <span class="app-subtitle">Sistema de Reservas - Demo TFU3</span>
+  </mat-toolbar>
+
+  <!-- Material Tabs for Navigation -->
+  <mat-tab-group
+    class="app-navigation"
+    [selectedIndex]="getActiveTabIndex()"
+    (selectedTabChange)="onTabChange($event)"
+    mat-stretch-tabs
+  >
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>hotel</mat-icon>
+        <span>Habitaciones</span>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>event_note</mat-icon>
+        <span>Reservas</span>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet />
+  </main>
+
+  <!-- Material Footer -->
+  <mat-toolbar class="app-footer">
+    <span>🎓 TFU3 - Análisis y Diseño de Aplicaciones II - 2025</span>
+    <span class="toolbar-spacer"></span>
+
+    <div class="footer-status">
+      <mat-chip [color]="appState.apiStatus().includes('Connected') ? 'primary' : 'warn'" selected>
+        <mat-icon>{{
+          appState.apiStatus().includes('Connected') ? 'cloud_done' : 'cloud_off'
+        }}</mat-icon>
+        {{ appState.apiStatus() }}
+      </mat-chip>
+
+      <button mat-icon-button (click)="refreshApiStatus()" matTooltip="Verificar conexión API">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </mat-toolbar>
+</div>

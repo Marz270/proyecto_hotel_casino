@@ -1,0 +1,70 @@
+// Tema casino simple usando solo CSS custom properties
+:root {
+  // Colores primarios del casino
+  --mdc-theme-primary: #ffc107;
+  --mdc-theme-secondary: #ffca28;
+  --mdc-theme-error: #dc3545;
+  --mdc-theme-success: #28a745;
+
+  // Superficies
+  --mdc-theme-surface: #1a1a1a;
+  --mdc-theme-background: #000000;
+
+  // Texto
+  --mdc-theme-on-primary: #000000;
+  --mdc-theme-on-secondary: #000000;
+  --mdc-theme-on-surface: #ffffff;
+  --mdc-theme-on-background: #ffffff;
+
+  // Variables personalizadas del casino
+  --casino-gold: #ffc107;
+  --casino-gold-dark: #ff8f00;
+  --casino-gold-light: #fff350;
+  --casino-dark: #1a1a1a;
+  --casino-black: #000000;
+  --casino-white: #ffffff;
+  --casino-silver: #c0c0c0;
+  --casino-red: #dc3545;
+  --casino-green: #28a745;
+
+  // Superficies adicionales para mejor organización
+  --casino-surface: #2d2d2d;
+  --casino-surface-light: #3d3d3d;
+  --casino-text-on-dark: #ffffff;
+  --casino-text-on-gold: #000000;
+  --casino-accent: #ffca28;
+}
+
+// Sobrescribir estilos de Material con la paleta casino
+.mat-mdc-card {
+  --mdc-card-container-color: var(--casino-black) !important;
+  --mdc-card-outline-color: var(--casino-gold) !important;
+}
+
+.mat-mdc-button.mat-primary {
+  --mdc-filled-button-container-color: var(--casino-gold) !important;
+  --mdc-filled-button-label-text-color: var(--casino-black) !important;
+}
+
+.mat-mdc-form-field {
+  --mdc-filled-text-field-active-indicator-color: var(--casino-gold) !important;
+  --mdc-filled-text-field-focus-active-indicator-color: var(--casino-gold) !important;
+  --mdc-filled-text-field-label-text-color: var(--casino-white) !important;
+  --mdc-filled-text-field-input-text-color: var(--casino-white) !important;
+}
+
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--casino-gold) !important;
+  --mdc-linear-progress-track-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.mat-mdc-tab-group {
+  --mdc-tab-indicator-active-indicator-color: var(--casino-gold) !important;
+  --mat-tab-header-active-label-text-color: var(--casino-gold) !important;
+  --mat-tab-header-inactive-label-text-color: var(--casino-white) !important;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--casino-black) !important;
+  --mdc-snackbar-supporting-text-color: var(--casino-white) !important;
+}

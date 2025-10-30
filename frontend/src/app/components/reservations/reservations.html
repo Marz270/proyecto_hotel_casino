@@ -1,0 +1,75 @@
+<div class="reservations-section">
+  <h2>Gestión de Reservas</h2>
+
+  <!-- Create Reservation Form -->
+  <div class="reservation-form" *ngIf="showForm">
+    <h3>Nueva Reserva</h3>
+    <form (ngSubmit)="createReservation()" #reservationForm="ngForm">
+      <label>
+        Nombre del Cliente:
+        <input type="text" [(ngModel)]="formData().client_name" name="client_name" required />
+      </label>
+      <label>
+        Habitación:
+        <input type="number" [(ngModel)]="formData().room_number" name="room_number" required />
+      </label>
+      <label>
+        Check-in:
+        <input type="date" [(ngModel)]="formData().check_in" name="check_in" required />
+      </label>
+      <label>
+        Check-out:
+        <input type="date" [(ngModel)]="formData().check_out" name="check_out" required />
+      </label>
+      <label>
+        Precio Total:
+        <input
+          type="number"
+          step="0.01"
+          [(ngModel)]="formData().total_price"
+          name="total_price"
+          required
+        />
+      </label>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary" [disabled]="!reservationForm.form.valid">
+          Crear Reserva
+        </button>
+        <button type="button" class="btn-secondary" (click)="resetForm()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Reservations List -->
+  <div class="reservations-list-section">
+    <div class="section-header">
+      <h3>Reservas Existentes</h3>
+      <button class="btn-primary" (click)="showNewReservationForm()" *ngIf="!showForm">
+        + Nueva Reserva
+      </button>
+    </div>
+
+    <div class="reservations-list" *ngIf="reservations().length > 0">
+      <div *ngFor="let reservation of reservations()" class="reservation-card">
+        <h4>{{ reservation.client_name }}</h4>
+        <p><strong>Habitación:</strong> {{ reservation.room_number }}</p>
+        <p><strong>Check-in:</strong> {{ reservation.check_in | date }}</p>
+        <p><strong>Check-out:</strong> {{ reservation.check_out | date }}</p>
+        <p><strong>Total:</strong> ${{ reservation.total_price }}</p>
+        <div class="card-actions">
+          <button
+            class="btn-danger"
+            (click)="deleteReservation(reservation.id!)"
+            [disabled]="!reservation.id"
+          >
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="reservations().length === 0 && !isLoading" class="no-data">
+      No hay reservas registradas.
+    </div>
+  </div>
+</div>

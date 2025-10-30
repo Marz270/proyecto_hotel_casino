@@ -1,0 +1,370 @@
+/* Estilos del componente Rooms con tema Casino */
+.rooms-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Cards con tema oscuro elegante */
+.header-card,
+.filters-card,
+.search-info-card,
+.empty-state-card,
+.results-header-card {
+  background: var(--casino-surface) !important;
+  border: 1px solid var(--casino-gold);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 1.5rem !important; /* Más padding interno */
+}
+
+.header-card .mat-mdc-card-title,
+.filters-card .mat-mdc-card-title {
+  color: var(--casino-gold) !important;
+  font-weight: 600;
+  margin-bottom: 0.8rem !important;
+}
+
+.header-card .mat-mdc-card-subtitle,
+.filters-card .mat-mdc-card-subtitle {
+  color: var(--casino-white) !important; /* Cambio de text-on-dark a white para mejor contraste */
+  opacity: 0.9;
+}
+
+/* Formulario de búsqueda */
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.date-fields {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.date-fields mat-form-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Cards de habitaciones */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem; /* Más espacio entre tarjetas */
+  margin-top: 1rem;
+  align-items: start; /* Alinear tarjetas al inicio */
+}
+
+.room-card {
+  background: var(--casino-surface) !important;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: visible; /* Permitir contenido visible */
+  padding: 1.5rem !important; /* Más espacio interno */
+  height: auto !important; /* Altura automática */
+  min-height: auto !important; /* Sin restricción de altura mínima */
+  display: flex;
+  flex-direction: column;
+}
+
+.room-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--casino-gold), var(--casino-accent));
+}
+
+.room-card:hover {
+  border-color: var(--casino-gold);
+  box-shadow: 0 8px 24px rgba(255, 193, 7, 0.2);
+  transform: translateY(-2px);
+}
+
+.room-card.unavailable {
+  opacity: 0.6;
+  filter: grayscale(50%);
+}
+
+.room-card .mat-mdc-card-header {
+  background: var(--casino-surface-light);
+  margin: -24px -24px 20px -24px; /* Ajustado para el nuevo padding */
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--casino-gold);
+}
+
+.room-card .mat-mdc-card-title {
+  color: var(--casino-gold) !important;
+  font-weight: 600;
+  font-size: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.room-card .mat-mdc-card-subtitle {
+  color: var(--casino-white) !important; /* Mejor contraste */
+  opacity: 0.9;
+  font-size: 0.95rem !important;
+}
+
+/* Chips de disponibilidad */
+.card-actions-header {
+  margin-left: auto;
+}
+
+.card-actions-header mat-chip {
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.card-actions-header mat-chip[color='primary'] {
+  background: var(--casino-gold) !important;
+  color: var(--casino-text-on-gold) !important;
+}
+
+.card-actions-header mat-chip[color='warn'] {
+  background: #d32f2f !important;
+  color: white !important;
+}
+
+/* Lista de detalles */
+.room-card mat-list {
+  background: transparent !important;
+  padding: 1rem 0 !important; /* Más espacio arriba y abajo */
+  flex-grow: 1; /* Permitir que la lista crezca */
+}
+
+.room-card mat-list-item {
+  color: var(--casino-white) !important; /* Mejor contraste */
+  padding: 0.8rem 0 !important; /* Más espacio vertical */
+  border-bottom: 1px solid rgba(255, 193, 7, 0.1);
+  min-height: auto !important; /* Sin restricción de altura */
+  height: auto !important; /* Altura automática */
+}
+
+.room-card mat-list-item:last-child {
+  border-bottom: none;
+}
+
+.room-card mat-card-content {
+  flex-grow: 1; /* Permitir que el contenido crezca */
+  padding: 1rem 0 !important; /* Más espacio vertical */
+}
+
+.room-card mat-list-item [matListItemTitle] {
+  color: var(--casino-white) !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  line-height: 1.4 !important; /* Mejor espaciado de línea */
+  margin-bottom: 0.3rem !important; /* Espacio entre título y línea */
+}
+
+.room-card mat-list-item [matListItemLine] {
+  color: var(--casino-white) !important;
+  font-weight: 500 !important;
+  opacity: 0.9 !important;
+  line-height: 1.3 !important; /* Mejor espaciado de línea */
+  white-space: nowrap; /* Evitar corte de texto */
+  overflow: visible !important; /* Permitir texto visible */
+}
+
+.room-card mat-list-item .mat-mdc-list-item-content {
+  color: var(--casino-white) !important;
+}
+
+.room-card mat-list-item mat-icon {
+  color: var(--casino-gold) !important;
+  margin-right: 0.75rem !important;
+}
+
+.room-card mat-list-item .mat-mdc-list-item-content {
+  padding: 0 !important;
+}
+
+.total-price {
+  font-weight: 600;
+  color: var(--casino-gold) !important;
+  font-size: 1.3rem !important; /* Más visible */
+  text-align: center;
+  padding: 1rem 0;
+  border: 2px solid var(--casino-gold);
+  border-radius: 8px;
+  background: rgba(255, 193, 7, 0.1);
+  margin: 1rem 0;
+}
+
+/* Botones en cards */
+.room-card mat-card-actions {
+  border-top: 1px solid var(--casino-gold);
+  background: var(--casino-surface-light);
+  margin: 20px -24px -24px -24px; /* Ajustado para el nuevo padding */
+  padding: 20px 24px;
+  text-align: center;
+}
+
+/* Estado vacío */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  height: 4rem;
+  width: 4rem;
+  color: var(--casino-gold);
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.empty-state h3 {
+  color: var(--casino-gold) !important;
+  margin-bottom: 1rem;
+  font-size: 1.5rem !important;
+}
+
+.empty-state p {
+  color: var(--casino-white) !important; /* Mejor contraste */
+  opacity: 0.9;
+  font-size: 1rem !important;
+}
+
+/* Estilos para botones del tema casino */
+.room-card button[mat-raised-button],
+.search-actions button[mat-raised-button],
+.filters-card button[mat-raised-button] {
+  background-color: var(--casino-gold) !important;
+  color: var(--casino-black) !important;
+  font-weight: 600 !important;
+  border: 2px solid var(--casino-gold) !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.75rem 1.5rem !important;
+  min-height: 44px !important;
+}
+
+.search-actions button[mat-raised-button] mat-icon {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  font-size: 1.2rem !important;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+  line-height: 1.2rem !important;
+}
+
+.room-card button[mat-raised-button]:hover,
+.search-actions button[mat-raised-button]:hover,
+.filters-card button[mat-raised-button]:hover {
+  background-color: #ffca28 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3) !important;
+}
+
+.room-card button[mat-stroked-button],
+.search-actions button[mat-stroked-button] {
+  color: var(--casino-gold) !important;
+  border-color: var(--casino-gold) !important;
+  background-color: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+.room-card button[mat-stroked-button]:hover,
+.search-actions button[mat-stroked-button]:hover {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  color: var(--casino-gold) !important;
+}
+
+.search-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Mejorar campos de formulario */
+.search-form mat-form-field {
+  margin-bottom: 1rem;
+}
+
+.search-form mat-form-field .mat-mdc-form-field-subscript-wrapper {
+  color: var(--casino-white) !important;
+}
+
+.search-form mat-form-field .mat-mdc-form-field-error {
+  color: #ff6b6b !important;
+}
+
+/* Chips de información */
+.search-info-card mat-chip-set mat-chip {
+  background: var(--casino-gold) !important;
+  color: var(--casino-text-on-gold) !important;
+  font-weight: 500;
+}
+
+.search-info-card mat-chip mat-icon {
+  color: var(--casino-text-on-gold) !important;
+}
+
+/* Header de resultados */
+.results-header-card h3 {
+  color: var(--casino-gold) !important;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Progress bar */
+.mat-mdc-progress-bar {
+  margin: 1rem 0;
+}
+
+/* Prevenir corte de texto en Material Components */
+.mat-mdc-list-item-content {
+  overflow: visible !important;
+  white-space: normal !important;
+  height: auto !important;
+  min-height: auto !important;
+}
+
+.mat-mdc-list-item {
+  height: auto !important;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+
+.mat-mdc-list-item-title,
+.mat-mdc-list-item-line {
+  overflow: visible !important;
+  white-space: normal !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .date-fields {
+    flex-direction: column;
+  }
+
+  .search-actions {
+    flex-direction: column;
+  }
+
+  .rooms-grid {
+    grid-template-columns: 1fr;
+  }
+}

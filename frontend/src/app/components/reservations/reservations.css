@@ -1,0 +1,174 @@
+.reservations-section {
+  padding: 1rem;
+  background-color: var(--casino-dark);
+  color: var(--casino-white);
+}
+
+.reservation-form {
+  background: var(--casino-black);
+  border: 2px solid var(--casino-gold);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.reservation-form h3 {
+  margin-bottom: 1.5rem;
+  color: var(--casino-gold);
+}
+
+.reservation-form label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: var(--casino-white);
+}
+
+.reservation-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--casino-gold);
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+  background-color: var(--casino-dark);
+  color: var(--casino-white);
+}
+
+.reservation-form input:focus {
+  outline: none;
+  border-color: #ffca28;
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+}
+
+/* Estilos específicos para inputs de tipo date */
+.reservation-form input[type='date'] {
+  position: relative;
+  color-scheme: dark; /* Mejora el contraste del widget de fecha en navegadores modernos */
+}
+
+/* Personalizar el icono de calendario en navegadores webkit */
+.reservation-form input[type='date']::-webkit-calendar-picker-indicator {
+  background-color: var(--casino-gold);
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 3px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease, background-color 0.3s ease;
+}
+
+.reservation-form input[type='date']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  background-color: #ffca28;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--casino-gold);
+  color: var(--casino-black);
+}
+
+.btn-primary:hover {
+  background-color: #ffca28;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.btn-primary:disabled {
+  background-color: #666;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: var(--casino-silver);
+  color: var(--casino-black);
+}
+
+.btn-secondary:hover {
+  background-color: #d4d4d4;
+}
+
+.btn-danger {
+  background-color: var(--casino-red);
+  color: var(--casino-white);
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.reservations-list-section {
+  background: var(--casino-black);
+  border: 2px solid var(--casino-gold);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  color: var(--casino-gold);
+  margin: 0;
+}
+
+.reservations-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.reservation-card {
+  border: 1px solid var(--casino-gold);
+  border-radius: 6px;
+  padding: 1rem;
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.reservation-card h4 {
+  color: var(--casino-gold);
+  margin-bottom: 0.5rem;
+}
+
+.reservation-card p {
+  margin-bottom: 0.25rem;
+  color: var(--casino-white);
+}
+
+.card-actions {
+  margin-top: 1rem;
+}
+
+.loading,
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  margin: 1rem 0;
+  color: var(--casino-silver);
+  background-color: var(--casino-black);
+  border: 1px solid var(--casino-gold);
+  border-radius: 6px;
+}

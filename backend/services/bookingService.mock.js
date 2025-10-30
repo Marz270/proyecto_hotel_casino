@@ -25,9 +25,6 @@ class BookingServiceMock {
   }
 
   async getAllBookings() {
-    // Simular latencia de red
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
     return {
       success: true,
       data: [...this.bookings],
@@ -36,8 +33,6 @@ class BookingServiceMock {
   }
 
   async createBooking(bookingData) {
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
     const newBooking = {
       id: this.nextId++,
       ...bookingData,
@@ -54,8 +49,6 @@ class BookingServiceMock {
   }
 
   async getBookingById(id) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-
     const booking = this.bookings.find((b) => b.id == id);
 
     if (!booking) {
@@ -74,8 +67,6 @@ class BookingServiceMock {
   }
 
   async deleteBooking(id) {
-    await new Promise((resolve) => setTimeout(resolve, 30));
-
     const bookingIndex = this.bookings.findIndex((b) => b.id == id);
 
     if (bookingIndex === -1) {

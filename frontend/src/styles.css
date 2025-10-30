@@ -1,0 +1,469 @@
+/* Importar el tema personalizado */
+@import 'custom-theme.scss';
+
+/* Variables globales para la paleta casino */
+:root {
+  --casino-gold: #ffc107;
+  --casino-dark: #1a1a1a;
+  --casino-black: #000000;
+  --casino-white: #ffffff;
+  --casino-silver: #c0c0c0;
+  --casino-red: #dc3545;
+  --casino-green: #28a745;
+}
+
+/* Estilos globales casino */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--casino-dark);
+  color: var(--casino-white);
+  overflow-x: hidden; /* Evitar scroll horizontal global */
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Personalizar scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--casino-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--casino-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--casino-gold-dark);
+}
+
+/* App Container */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--casino-dark);
+}
+
+/* Header */
+.app-header {
+  background: linear-gradient(135deg, var(--casino-dark) 0%, var(--casino-black) 100%);
+  color: var(--casino-gold);
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
+  border-bottom: 2px solid var(--casino-gold);
+}
+
+.app-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--casino-gold);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 300;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.app-header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  color: var(--casino-silver);
+}
+
+/* Navigation */
+.app-navigation {
+  background: var(--casino-black);
+  border-bottom: 2px solid var(--casino-gold);
+  box-shadow: 0 2px 4px rgba(255, 193, 7, 0.2);
+}
+
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  padding: 1rem 2rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  color: var(--casino-white);
+  min-width: 160px;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: var(--casino-gold);
+}
+
+.nav-item.active {
+  background-color: rgba(255, 193, 7, 0.2);
+  border-bottom-color: var(--casino-gold);
+  color: var(--casino-gold);
+}
+
+.nav-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: inherit;
+  margin-bottom: 0.25rem;
+}
+
+.nav-item.active .nav-label {
+  color: var(--casino-gold);
+}
+
+.nav-description {
+  font-size: 0.85rem;
+  color: var(--casino-silver);
+  font-weight: 400;
+}
+
+.nav-item.active .nav-description {
+  color: var(--casino-gold);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  background-color: var(--casino-dark);
+  flex-direction: column;
+}
+
+.route-content {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+/* Error Banner */
+.error-banner {
+  background-color: rgba(220, 53, 69, 0.15);
+  border: 1px solid var(--casino-red);
+  border-radius: 6px;
+  margin-bottom: 2rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  gap: 1rem;
+}
+
+.error-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  color: var(--casino-red);
+}
+
+.error-message {
+  flex: 1;
+  color: var(--casino-red);
+  font-weight: 500;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: var(--casino-red);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.error-close:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--casino-black);
+  color: var(--casino-gold);
+  padding: 1rem;
+  border-top: 2px solid var(--casino-gold);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-connected {
+  color: var(--casino-green);
+  font-weight: 600;
+}
+
+.status-disconnected {
+  color: var(--casino-red);
+  font-weight: 600;
+}
+
+.refresh-button {
+  background: var(--casino-gold);
+  color: var(--casino-black);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  background: #ffca28;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-header h1 {
+    font-size: 2rem;
+  }
+
+  .nav-container {
+    flex-direction: column;
+  }
+
+  .nav-item {
+    min-width: auto;
+    padding: 1rem;
+    border-bottom: 1px solid var(--casino-gold);
+    border-right: none;
+  }
+
+  .nav-item.active {
+    border-bottom-color: var(--casino-gold);
+    border-left: 4px solid var(--casino-gold);
+  }
+
+  .route-content {
+    padding: 1rem;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* Sobrescribir algunos estilos de Material que no usan el tema */
+.mat-mdc-card {
+  background-color: var(--casino-black) !important;
+  color: var(--casino-white) !important;
+  border: 1px solid var(--casino-gold) !important;
+}
+
+.mat-mdc-form-field {
+  color: var(--casino-white) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-text-field-wrapper {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-form-field-focus-overlay {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-focus-overlay {
+  opacity: 1 !important;
+}
+
+.mat-mdc-input-element {
+  color: var(--casino-white) !important;
+  caret-color: var(--casino-gold) !important;
+}
+
+.mat-mdc-input-element::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.mat-mdc-button.mat-primary {
+  background-color: var(--casino-gold) !important;
+  color: var(--casino-black) !important;
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+.mat-mdc-button.mat-primary .mat-icon {
+  margin: 0 !important;
+  font-size: 1.2rem !important;
+  width: 1.2rem !important;
+  height: 1.2rem !important;
+}
+
+.mat-mdc-button.mat-primary:hover {
+  background-color: #ffca28 !important;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3) !important;
+}
+
+.mat-mdc-button.mat-stroked {
+  color: var(--casino-gold) !important;
+  border-color: var(--casino-gold) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+.mat-mdc-button.mat-stroked .mat-icon {
+  margin: 0 !important;
+}
+
+.mat-mdc-button.mat-stroked:hover {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--casino-gold) !important;
+  --mdc-linear-progress-track-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+/* Tabs mejoradas */
+.mat-mdc-tab-group {
+  background-color: transparent !important;
+}
+
+.mat-mdc-tab-header {
+  border-bottom: 2px solid var(--casino-gold) !important;
+}
+
+.mat-mdc-tab-labels {
+  background-color: var(--casino-black) !important;
+}
+
+.mat-mdc-tab {
+  color: var(--casino-white) !important;
+  opacity: 0.7;
+}
+
+.mat-mdc-tab.mdc-tab--active {
+  color: var(--casino-gold) !important;
+  opacity: 1;
+}
+
+.mat-mdc-tab-body-content {
+  background-color: var(--casino-dark) !important;
+  color: var(--casino-white) !important;
+  padding: 1rem !important;
+}
+
+/* Chips mejorados */
+.mat-mdc-chip {
+  background-color: var(--casino-gold) !important;
+  color: var(--casino-black) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-chip.mat-warn {
+  background-color: #d32f2f !important;
+  color: white !important;
+}
+
+/* Estilos adicionales para tabs de navegación - contraste mejorado */
+.mat-mdc-tab .mdc-tab__content {
+  color: var(--casino-white) !important;
+}
+
+.mat-mdc-tab .mdc-tab__text-label {
+  color: var(--casino-white) !important;
+  font-weight: 500 !important;
+}
+
+.mat-mdc-tab:hover .mdc-tab__text-label {
+  color: var(--casino-gold) !important;
+}
+
+.mat-mdc-tab--active .mdc-tab__text-label {
+  color: var(--casino-gold) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-tab .mat-icon {
+  color: var(--casino-white) !important;
+}
+
+.mat-mdc-tab:hover .mat-icon {
+  color: var(--casino-gold) !important;
+}
+
+.mat-mdc-tab--active .mat-icon {
+  color: var(--casino-gold) !important;
+}
+
+/* Lista items - contraste mejorado */
+.mat-mdc-list-item .mdc-list-item__primary-text {
+  color: var(--casino-white) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-list-item .mdc-list-item__secondary-text {
+  color: var(--casino-white) !important;
+  opacity: 0.9 !important;
+}
+
+.mat-mdc-list-item .mat-mdc-list-item-title {
+  color: var(--casino-white) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-list-item .mat-mdc-list-item-line {
+  color: var(--casino-white) !important;
+  font-weight: 500 !important;
+}
+
+/* Específico para elementos de lista en tarjetas de habitaciones */
+.room-card .mat-mdc-list-item .mdc-list-item__content {
+  color: var(--casino-white) !important;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
