@@ -9,6 +9,20 @@ import { Room, RoomSearchParams } from '../models/room.model';
 export class RoomsService {
   private readonly httpService = inject(HttpService);
   /**
+   * Obtiene los tipos de habitaciones para la página principal
+   */
+  getRoomTypes(): Observable<any[]> {
+    return this.httpService.get<any[]>('/rooms/types').pipe(
+      map((response) => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error || 'Error al obtener tipos de habitaciones');
+      })
+    );
+  }
+
+  /**
    * Obtiene todas las habitaciones con disponibilidad calculada
    * @param params Parámetros de filtrado (fechas)
    */

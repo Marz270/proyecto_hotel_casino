@@ -49,15 +49,26 @@ body {
   color: var(--casino-gold) !important;
 }
 
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.logo-link:hover {
+  transform: scale(1.05);
+}
+
 .app-logo {
   height: 40px;
   width: auto;
-  margin-right: 0.75rem;
   filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
   transition: filter 0.3s ease;
 }
 
-.app-logo:hover {
+.logo-link:hover .app-logo {
   filter: drop-shadow(0 2px 8px rgba(255, 193, 7, 0.5));
 }
 
@@ -122,9 +133,7 @@ body {
 /* Contenido principal */
 .main-content {
   flex: 1;
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0;
   width: 100%;
   background: transparent;
   box-sizing: border-box;
@@ -136,18 +145,132 @@ body {
   margin-top: auto;
   background: var(--casino-dark) !important;
   color: var(--casino-text-on-dark) !important;
-  border-top: 1px solid var(--casino-gold);
+  border-top: 2px solid var(--casino-gold);
+  padding: 1rem 2rem !important;
+  min-height: 80px;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.footer-logo {
+  height: 35px;
+  width: auto;
+  filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.3));
+}
+
+.footer-social {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.social-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.social-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.social-button.instagram {
+  background: linear-gradient(
+    45deg,
+    #f09433 0%,
+    #e6683c 25%,
+    #dc2743 50%,
+    #cc2366 75%,
+    #bc1888 100%
+  );
+  color: white;
+}
+
+.social-button.instagram:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(240, 148, 51, 0.5);
+}
+
+.social-button.facebook {
+  background: #1877f2;
+  color: white;
+}
+
+.social-button.facebook:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.5);
 }
 
 .footer-status {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
 
-.footer-status mat-chip {
-  background: var(--casino-gold) !important;
-  color: var(--casino-text-on-gold) !important;
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  transition: all 0.3s ease;
+}
+
+.status-indicator.status-connected {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: #4caf50;
+}
+
+.status-indicator.status-disconnected {
+  background: rgba(244, 67, 54, 0.15);
+  border-color: #f44336;
+}
+
+.status-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.status-indicator.status-connected .status-icon {
+  color: #4caf50;
+}
+
+.status-indicator.status-disconnected .status-icon {
+  color: #f44336;
+}
+
+.status-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--casino-text-on-dark);
+}
+
+.refresh-button {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid var(--casino-gold);
+  transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+  background: rgba(255, 193, 7, 0.2);
+  transform: rotate(180deg);
+}
+
+.refresh-button mat-icon {
+  color: var(--casino-gold);
 }
 
 /* Personalización de Material Components */
@@ -247,5 +370,28 @@ body {
 
   .app-subtitle {
     display: none;
+  }
+
+  .footer-left {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .footer-logo {
+    height: 28px;
+  }
+
+  .social-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .social-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .status-text {
+    font-size: 0.8rem;
   }
 }

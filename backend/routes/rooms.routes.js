@@ -12,6 +12,11 @@ router.get("/rooms", async (req, res) => {
 
     let query = `
       SELECT r.*, 
+        rt.type_name as room_type,
+        rt.price_per_night,
+        rt.max_guests,
+        rt.description,
+        rt.image_url,
         CASE WHEN EXISTS (
           SELECT 1 FROM bookings b 
           WHERE b.room_number = r.room_number 
@@ -22,6 +27,7 @@ router.get("/rooms", async (req, res) => {
           )
         ) THEN false ELSE true END as available
       FROM rooms r
+      JOIN room_types rt ON r.room_type_id = rt.id
       ORDER BY r.room_number
     `;
 
@@ -42,6 +48,36 @@ router.get("/rooms", async (req, res) => {
     res.status(500).json({
       success: false,
       error: "Error fetching rooms",
+      details: error.message,
+    });
+  }
+});
+
+// GET /rooms/types - Obtener tipos de habitaciones únicos para la página principal
+router.get("/rooms/types", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        type_name as title,
+        description,
+        image_url as image,
+        price_per_night,
+        max_guests
+      FROM room_types
+      ORDER BY price_per_night
+    `;
+
+    const result = await pool.query(query);
+
+    res.json({
+      success: true,
+      data: result.rows,
+      count: result.rows.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Error fetching room types",
       details: error.message,
     });
   }
@@ -100,9 +136,9 @@ router.get(
           SELECT 
             r.id, 
             r.room_number, 
-            r.room_type, 
-            r.price_per_night,
-            r.max_guests,
+            rt.type_name as room_type, 
+            rt.price_per_night,
+            rt.max_guests,
             COALESCE(
               (SELECT COUNT(*) 
                FROM bookings b 
@@ -111,6 +147,7 @@ router.get(
               0
             ) as reservations_count
           FROM rooms r
+          JOIN room_types rt ON r.room_type_id = rt.id
           ORDER BY r.room_number
         `;
         params = [month];
@@ -120,9 +157,9 @@ router.get(
           SELECT 
             r.id, 
             r.room_number, 
-            r.room_type, 
-            r.price_per_night,
-            r.max_guests,
+            rt.type_name as room_type, 
+            rt.price_per_night,
+            rt.max_guests,
             CASE 
               WHEN EXISTS (
                 SELECT 1 
@@ -135,6 +172,7 @@ router.get(
               ELSE true
             END as available
           FROM rooms r
+          JOIN room_types rt ON r.room_type_id = rt.id
           ORDER BY r.room_number
         `;
         params = [check_in, check_out];
