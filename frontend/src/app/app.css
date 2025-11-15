@@ -85,6 +85,156 @@ body {
   color: var(--casino-gold-light);
 }
 
+/* Auth Section */
+.auth-section {
+  display: flex;
+  align-items: center;
+  margin-left: 1rem;
+}
+
+.login-button {
+  background: linear-gradient(90deg, #d4af37 0%, #f4d03f 100%) !important;
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5) !important;
+}
+
+.login-button mat-icon {
+  color: #1a1a1a !important;
+  margin-right: 0.5rem;
+}
+
+.user-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--casino-text-on-dark) !important;
+  transition: all 0.3s ease;
+}
+
+.user-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--casino-gold);
+}
+
+.user-button mat-icon {
+  color: var(--casino-gold) !important;
+}
+
+.username {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dropdown-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* User Menu */
+::ng-deep .user-menu .mat-mdc-menu-content {
+  background: #2a2a2a !important;
+  border: 2px solid var(--casino-gold);
+  padding: 0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  min-width: 280px;
+  max-height: none !important;
+  overflow: hidden !important;
+}
+
+.user-info {
+  padding: 1.5rem;
+  background: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.user-info-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info-header mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: var(--casino-gold);
+  flex-shrink: 0;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.4rem;
+}
+
+.user-email {
+  font-size: 0.9rem;
+  color: #cccccc;
+  margin-bottom: 0.5rem;
+}
+
+.user-role {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--casino-gold);
+  color: #000000;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+::ng-deep .user-menu .mat-mdc-menu-item {
+  color: #ffffff !important;
+  min-height: 56px;
+  padding: 0 1.25rem !important;
+  font-size: 1rem;
+}
+
+::ng-deep .user-menu .mat-mdc-menu-item:hover {
+  background: rgba(255, 193, 7, 0.15) !important;
+}
+
+::ng-deep .user-menu .mat-mdc-menu-item mat-icon {
+  color: var(--casino-gold) !important;
+  margin-right: 1rem;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+::ng-deep .user-menu .mat-mdc-menu-item span {
+  font-weight: 500;
+}
+
+::ng-deep .user-menu mat-divider {
+  border-color: rgba(255, 193, 7, 0.3) !important;
+  margin: 0 !important;
+}
+
 /* Tabs de navegación */
 .app-navigation .mat-mdc-tab-group {
   background: var(--casino-dark-light) !important;
@@ -153,7 +303,7 @@ body {
 .footer-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .footer-logo {
@@ -164,7 +314,7 @@ body {
 
 .footer-social {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .social-button {
@@ -214,7 +364,7 @@ body {
 .footer-status {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .status-indicator {
@@ -222,7 +372,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 24px;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 193, 7, 0.3);
   transition: all 0.3s ease;
@@ -262,6 +412,7 @@ body {
   background: rgba(255, 193, 7, 0.1);
   border: 1px solid var(--casino-gold);
   transition: all 0.3s ease;
+  padding: 0.5rem;
 }
 
 .refresh-button:hover {
@@ -271,6 +422,9 @@ body {
 
 .refresh-button mat-icon {
   color: var(--casino-gold);
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 /* Personalización de Material Components */
@@ -346,20 +500,71 @@ body {
   color: var(--casino-gold);
 }
 
-/* Snackbars personalizados */
+/* Snackbars personalizados - Diseño moderno */
 ::ng-deep .success-snackbar {
-  background-color: var(--casino-gold) !important;
-  color: var(--casino-text-on-gold) !important;
+  --mdc-snackbar-container-color: #1a1a1a !important;
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #4caf50 !important;
+}
+
+::ng-deep .success-snackbar .mat-mdc-snack-bar-label {
+  color: #ffffff !important;
+}
+
+::ng-deep .success-snackbar .mdc-snackbar__surface {
+  background: linear-gradient(135deg, #1e3a1e 0%, #2d5a2d 100%) !important;
+  border-left: 4px solid #4caf50 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3) !important;
+  padding: 1rem 1.5rem !important;
 }
 
 ::ng-deep .error-snackbar {
-  background-color: #d32f2f !important;
-  color: white !important;
+  --mdc-snackbar-container-color: #1a1a1a !important;
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #f44336 !important;
+}
+
+::ng-deep .error-snackbar .mat-mdc-snack-bar-label {
+  color: #ffffff !important;
+}
+
+::ng-deep .error-snackbar .mdc-snackbar__surface {
+  background: linear-gradient(135deg, #3a1e1e 0%, #5a2d2d 100%) !important;
+  border-left: 4px solid #f44336 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(244, 67, 54, 0.3) !important;
+  padding: 1rem 1.5rem !important;
 }
 
 ::ng-deep .info-snackbar {
-  background-color: var(--casino-gold-dark) !important;
-  color: var(--casino-text-on-gold) !important;
+  --mdc-snackbar-container-color: #1a1a1a !important;
+  --mdc-snackbar-supporting-text-color: #ffffff !important;
+  --mat-snack-bar-button-color: #ffc107 !important;
+}
+
+::ng-deep .info-snackbar .mat-mdc-snack-bar-label {
+  color: #ffffff !important;
+}
+
+::ng-deep .info-snackbar .mdc-snackbar__surface {
+  background: linear-gradient(135deg, #3a3a1e 0%, #5a5a2d 100%) !important;
+  border-left: 4px solid #ffc107 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(255, 193, 7, 0.3) !important;
+  padding: 1rem 1.5rem !important;
+}
+
+/* Animación suave para el botón de cerrar */
+::ng-deep .mat-mdc-snack-bar-action {
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  transition: all 0.3s ease !important;
+}
+
+::ng-deep .mat-mdc-snack-bar-action:hover {
+  opacity: 0.8 !important;
+  transform: scale(1.05) !important;
 }
 
 /* Responsive */
@@ -378,17 +583,17 @@ body {
   }
 
   .footer-logo {
-    height: 28px;
+    height: 30px;
   }
 
   .social-button {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
 
   .social-button svg {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
   }
 
   .status-text {

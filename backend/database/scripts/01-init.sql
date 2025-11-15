@@ -42,6 +42,16 @@ CREATE TABLE IF NOT EXISTS clients (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Crear tabla de usuarios
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(50) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insertar tipos de habitaciones
 INSERT INTO room_types (type_name, description, image_url, price_per_night, max_guests) VALUES
 ('Standard', 
@@ -80,6 +90,13 @@ INSERT INTO clients (name, email, phone) VALUES
 ('María González', 'maria.gonzalez@email.com', '+595981234567'),
 ('Carlos Rodríguez', 'carlos.rodriguez@email.com', '+595981345678')
 ON CONFLICT (email) DO NOTHING;
+
+-- Insertar usuario admin de ejemplo (password: admin123)
+-- Hash generado con bcrypt rounds=10
+INSERT INTO users (username, email, password_hash, role) VALUES
+('admin', 'admin@saltohotelcasino.com', '$2b$10$x8yN33KBhE5bSXv/0RGAoe.WfU2kR7F4DuPH111cg0e.HW7uyUEXy', 'admin'),
+('usuario', 'user@saltohotelcasino.com', '$2b$10$DGG4Q7E0.M9JDgDXBv2NceGI5jROkgOQNe.1kDkgw.TLOx1QpLfOC', 'user')
+ON CONFLICT (username) DO NOTHING;
 
 -- Insertar datos de ejemplo para reservas
 INSERT INTO bookings (client_name, room_number, check_in, check_out, total_price) VALUES

@@ -48,6 +48,7 @@ services:
       - PGDATABASE=${DB_DATABASE:-hotel_casino}
       - PGHOST=${DB_HOST:-db}
       - PGPORT=${DB_PORT:-5432}
+      - JWT_SECRET=${JWT_SECRET:-your_super_secret_jwt_key_change_this_in_production}
     depends_on:
       db:
         condition: service_healthy
@@ -77,6 +78,7 @@ services:
       - PGDATABASE=${DB_DATABASE:-hotel_casino}
       - PGHOST=${DB_HOST:-db}
       - PGPORT=${DB_PORT:-5432}
+      - JWT_SECRET=${JWT_SECRET:-your_super_secret_jwt_key_change_this_in_production}
     depends_on:
       db:
         condition: service_healthy

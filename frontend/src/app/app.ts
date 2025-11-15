@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from './services/http-service';
 import { AppStateService } from './services/app-state-service';
+import { AuthService } from './services/auth.service';
 import { ApiInfo } from './models/api.model';
 import { MATERIAL_MODULES } from './material.config';
 
@@ -18,6 +19,7 @@ import { MATERIAL_MODULES } from './material.config';
 export class App implements OnInit {
   private readonly httpService = inject(HttpService);
   protected readonly appState = inject(AppStateService);
+  protected readonly authService = inject(AuthService);
 
   async ngOnInit() {
     await this.checkApiStatus();
@@ -43,5 +45,9 @@ export class App implements OnInit {
 
   async refreshApiStatus() {
     await this.checkApiStatus();
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

@@ -25,6 +25,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatMenuModule } from '@angular/material/menu';
 
 export const MATERIAL_MODULES = [
   MatToolbarModule,
@@ -51,6 +52,7 @@ export const MATERIAL_MODULES = [
   MatGridListModule,
   MatListModule,
   MatDividerModule,
+  MatMenuModule,
 ];
 
 export function provideMaterial() {

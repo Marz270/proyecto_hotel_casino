@@ -13,6 +13,10 @@ const router = express.Router();
 const queueRoutes = require("./queue.routes");
 router.use(queueRoutes);
 
+// Authentication routes
+const authRoutes = require("./auth.routes");
+router.use("/auth", authRoutes);
+
 // Inyección de dependencia - el servicio se resuelve en runtime
 const bookingService = BookingServiceFactory.createBookingService();
 
@@ -39,6 +43,10 @@ router.get("/", (req, res) => {
       booking_mode: process.env.BOOKING_MODE || "pg",
       endpoints: {
         "GET /health": "Health check endpoint",
+        "POST /auth/register": "Register new user",
+        "POST /auth/login": "Login user (returns JWT token)",
+        "GET /auth/me": "Get authenticated user info (requires token)",
+        "POST /auth/verify": "Verify JWT token validity",
         "GET /rooms": "Get available rooms",
         "GET /bookings": "Get all reservations",
         "POST /reservations": "Create new reservation",
