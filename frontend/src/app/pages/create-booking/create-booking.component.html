@@ -45,9 +45,11 @@
               formControlName="room_number"
               (selectionChange)="onRoomChange($event.value)"
             >
-              @for (room of rooms; track room.number) {
-              <mat-option [value]="room.number">
-                Habitación {{ room.number }} - {{ room.type }} (${{ room.price }}/noche)
+              @for (room of filteredRooms; track room.room_number) {
+              <mat-option [value]="room.room_number">
+                Habitación {{ room.room_number }} - {{ room.room_type }} (${{
+                  room.price_per_night
+                }}/noche)
               </mat-option>
               }
             </mat-select>

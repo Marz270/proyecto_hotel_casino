@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,6 +11,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { BookingsService } from '../../services/bookings-service';
 import { NotificationService } from '../../services/notification.service';
+import { RoomsService } from '../../services/rooms-service';
+import { Room } from '../../models/room.model';
 
 @Component({
   selector: 'app-create-booking',
@@ -34,22 +36,25 @@ export class CreateBookingComponent implements OnInit {
   private bookingsService = inject(BookingsService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private roomsService = inject(RoomsService);
 
   bookingForm!: FormGroup;
   isSubmitting = false;
   minDate = new Date();
   minCheckOutDate: Date | null = null;
+  selectedRoomType: string | null = null;
 
-  rooms = [
-    { number: 101, type: 'Individual', price: 120 },
-    { number: 102, type: 'Individual', price: 120 },
-    { number: 201, type: 'Doble', price: 180 },
-    { number: 202, type: 'Doble', price: 180 },
-    { number: 301, type: 'Suite', price: 350 },
-    { number: 401, type: 'Suite Premium', price: 540 },
-  ];
+  rooms: Room[] = [];
+  filteredRooms: Room[] = [];
 
   ngOnInit(): void {
+    // Obtener roomType del queryParam si existe
+    this.route.queryParams.subscribe((params) => {
+      this.selectedRoomType = params['roomType'] || null;
+      this.loadRooms();
+    });
+
     this.bookingForm = this.fb.group({
       client_name: ['', [Validators.required, Validators.minLength(2)]],
       room_number: ['', Validators.required],
@@ -75,8 +80,31 @@ export class CreateBookingComponent implements OnInit {
     });
   }
 
+  loadRooms(): void {
+    this.roomsService.getRooms().subscribe({
+      next: (rooms) => {
+        this.rooms = rooms;
+        this.filterRoomsByType();
+      },
+      error: (error) => {
+        console.error('Error al cargar habitaciones:', error);
+        this.notificationService.showError('Error al cargar habitaciones');
+      },
+    });
+  }
+
+  filterRoomsByType(): void {
+    if (this.selectedRoomType) {
+      this.filteredRooms = this.rooms.filter(
+        (room) => room.room_type.toLowerCase() === this.selectedRoomType!.toLowerCase()
+      );
+    } else {
+      this.filteredRooms = this.rooms;
+    }
+  }
+
   onRoomChange(roomNumber: number): void {
-    const room = this.rooms.find((r) => r.number === roomNumber);
+    const room = this.filteredRooms.find((r) => r.room_number === roomNumber);
     if (room) {
       this.calculateTotal();
     }
@@ -93,13 +121,13 @@ export class CreateBookingComponent implements OnInit {
 
     if (!checkIn || !checkOut || !roomNumber) return 0;
 
-    const room = this.rooms.find((r) => r.number === roomNumber);
+    const room = this.filteredRooms.find((r) => r.room_number === roomNumber);
     if (!room) return 0;
 
     const nights = Math.ceil(
       (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)
     );
-    return nights > 0 ? nights * room.price : 0;
+    return nights > 0 ? nights * room.price_per_night : 0;
   }
 
   onSubmit(): void {
@@ -146,8 +174,17 @@ export class CreateBookingComponent implements OnInit {
         this.bookingsService.createBooking(bookingData).subscribe({
           next: (response) => {
             this.isSubmitting = false;
-            this.notificationService.showSuccess('Reserva creada exitosamente');
-            this.router.navigate(['/bookings']);
+            // Redirigir a la página de confirmación con los detalles de la reserva
+            this.router.navigate(['/bookings/confirmation'], {
+              state: { booking: bookingData },
+              queryParams: {
+                clientName: bookingData.client_name,
+                roomNumber: bookingData.room_number,
+                checkIn: bookingData.check_in,
+                checkOut: bookingData.check_out,
+                totalPrice: bookingData.total_price,
+              },
+            });
           },
           error: (error) => {
             this.isSubmitting = false;
@@ -163,7 +200,7 @@ export class CreateBookingComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/bookings']);
+    this.router.navigate(['/']);
   }
 
   /**

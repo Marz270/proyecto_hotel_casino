@@ -58,9 +58,10 @@ router.get("/rooms/types", async (req, res) => {
   try {
     const query = `
       SELECT 
-        type_name as title,
+        id,
+        type_name,
         description,
-        image_url as image,
+        image_url,
         price_per_night,
         max_guests
       FROM room_types

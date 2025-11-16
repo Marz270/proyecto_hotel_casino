@@ -1,0 +1,67 @@
+<div class="confirmation-container">
+  <div class="confirmation-card">
+    <!-- Icono de éxito -->
+    <div class="success-icon-wrapper">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+    </div>
+
+    <!-- Título principal -->
+    <h1 class="confirmation-title">¡Reserva Completada!</h1>
+    <p class="confirmation-subtitle">
+      Gracias por confiar en <strong>Salto Hotel & Casino</strong>
+    </p>
+
+    <!-- Detalles de la reserva -->
+    @if (bookingDetails) {
+    <mat-card class="booking-details-card">
+      <mat-card-header>
+        <mat-card-title>Detalles de tu Reserva</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="detail-row">
+          <mat-icon>person</mat-icon>
+          <span class="detail-label">Nombre:</span>
+          <span class="detail-value">{{ bookingDetails.client_name }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>meeting_room</mat-icon>
+          <span class="detail-label">Habitación:</span>
+          <span class="detail-value">{{ bookingDetails.room_number }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>calendar_today</mat-icon>
+          <span class="detail-label">Check-in:</span>
+          <span class="detail-value">{{ bookingDetails.check_in }}</span>
+        </div>
+        <div class="detail-row">
+          <mat-icon>calendar_today</mat-icon>
+          <span class="detail-label">Check-out:</span>
+          <span class="detail-value">{{ bookingDetails.check_out }}</span>
+        </div>
+        <div class="detail-row total-row">
+          <mat-icon>payments</mat-icon>
+          <span class="detail-label">Total:</span>
+          <span class="detail-value">${{ bookingDetails.total_price }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    }
+
+    <!-- Mensaje adicional -->
+    <div class="additional-info">
+      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+      <button mat-stroked-button class="secondary-btn" (click)="goToRooms()">
+        <mat-icon>hotel</mat-icon>
+        Ver Más Habitaciones
+      </button>
+      <button mat-raised-button class="primary-btn" (click)="goToHome()">
+        <mat-icon>home</mat-icon>
+        Volver al Inicio
+      </button>
+    </div>
+  </div>
+</div>

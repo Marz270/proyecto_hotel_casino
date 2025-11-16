@@ -94,10 +94,10 @@
       <ng-container *ngIf="!loading">
         <mat-card class="room-card" *ngFor="let room of rooms">
           <div class="room-image-wrapper">
-            <img [src]="room.image" [alt]="room.title" class="room-image" />
+            <img [src]="room.image_url" [alt]="room.type_name" class="room-image" />
           </div>
           <mat-card-header>
-            <mat-card-title class="room-title">{{ room.title }}</mat-card-title>
+            <mat-card-title class="room-title">{{ room.type_name }}</mat-card-title>
           </mat-card-header>
           <mat-card-content>
             <p class="room-description">{{ room.description }}</p>
@@ -106,7 +106,8 @@
             <button
               mat-raised-button
               color="primary"
-              routerLink="/habitaciones"
+              [routerLink]="['/rooms']"
+              [queryParams]="{ type: room.type_name.toLowerCase() }"
               class="room-button"
             >
               Ver Disponibilidad
