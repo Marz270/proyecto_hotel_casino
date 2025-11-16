@@ -1,0 +1,156 @@
+<div class="bookings-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1 class="page-title">
+        <mat-icon>receipt_long</mat-icon>
+        Gestión de Reservas
+      </h1>
+      <p class="page-subtitle">Administración completa de bookings del hotel</p>
+    </div>
+    <button mat-raised-button color="primary" class="new-booking-btn">
+      <mat-icon>add</mat-icon>
+      Nueva Reserva
+    </button>
+  </div>
+
+  <!-- Barra de búsqueda y filtros -->
+  <div class="filters-section">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar cliente...</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Nombre del cliente" />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Año</mat-label>
+      <mat-select [formControl]="yearControl">
+        <mat-option value="all">Todos</mat-option>
+        @for (year of availableYears; track year) {
+        <mat-option [value]="year">{{ year }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Loader -->
+  @if (loading()) {
+  <div class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+  }
+
+  <!-- Lista de reservas -->
+  @if (!loading()) {
+  <!-- Sección: Todas las reservas -->
+  <div class="section-header">
+    <h2 class="section-title">Todas las Reservas</h2>
+  </div>
+
+  <mat-card class="bookings-card">
+    <table mat-table [dataSource]="filteredBookings()" class="bookings-table">
+      <!-- Columna ID -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>ID</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="booking-id">#{{ booking.id }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Fecha Creación -->
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef>Fecha Reserva</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="date">{{ formatDate(booking.created_at) }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Cliente -->
+      <ng-container matColumnDef="client_name">
+        <th mat-header-cell *matHeaderCellDef>Cliente</th>
+        <td mat-cell *matCellDef="let booking">
+          {{ booking.client_name }}
+        </td>
+      </ng-container>
+
+      <!-- Columna Habitación -->
+      <ng-container matColumnDef="room_number">
+        <th mat-header-cell *matHeaderCellDef>Habitación</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="room-badge">{{ booking.room_number }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Check-in -->
+      <ng-container matColumnDef="check_in">
+        <th mat-header-cell *matHeaderCellDef>Check-in</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="date">{{ formatDate(booking.check_in) }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Check-out -->
+      <ng-container matColumnDef="check_out">
+        <th mat-header-cell *matHeaderCellDef>Check-out</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="date">{{ formatDate(booking.check_out) }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Precio Total -->
+      <ng-container matColumnDef="total_price">
+        <th mat-header-cell *matHeaderCellDef>Precio Total</th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="price-value">${{ formatPrice(booking.total_price) }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Columna Estado -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let booking">
+          @if (getPaymentStatus(booking) === 'paid') {
+          <div class="status-badge status-paid">
+            <mat-icon>check_circle</mat-icon>
+            Completado
+          </div>
+          } @else {
+          <div class="status-badge status-pending">
+            <mat-icon>schedule</mat-icon>
+            Pendiente
+          </div>
+          }
+        </td>
+      </ng-container>
+
+      <!-- Columna Acciones -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let booking">
+          <div class="actions-buttons">
+            <button
+              mat-icon-button
+              class="action-btn edit-btn"
+              (click)="editBooking(booking)"
+              matTooltip="Editar"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              class="action-btn delete-btn"
+              (click)="deleteBooking(booking)"
+              matTooltip="Eliminar"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns" class="booking-row"></tr>
+    </table>
+  </mat-card>
+  }
+</div>
