@@ -1,13 +1,29 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { HttpService } from './http-service';
-import { Room, RoomSearchParams } from '../models/room.model';
+import { Room, RoomSearchParams, RoomType } from '../models/room.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoomsService {
   private readonly httpService = inject(HttpService);
+
+  /**
+   * Obtiene los tipos de habitaciones desde la API
+   * Retorna la información completa incluyendo image_url desde room_types
+   */
+  getRoomTypes(): Observable<RoomType[]> {
+    return this.httpService.get<RoomType[]>('/rooms/types').pipe(
+      map((response) => {
+        if (response.success && response.data) {
+          return response.data;
+        }
+        throw new Error(response.error || 'Error al obtener tipos de habitaciones');
+      })
+    );
+  }
+
   /**
    * Obtiene todas las habitaciones con disponibilidad calculada
    * @param params Parámetros de filtrado (fechas)

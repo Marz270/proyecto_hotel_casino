@@ -1,0 +1,440 @@
+/* Container principal */
+.bookings-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--casino-dark);
+  min-height: 100vh;
+}
+
+/* Header */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(255, 193, 7, 0.2);
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--casino-gold);
+}
+
+.page-title mat-icon {
+  font-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--casino-gold);
+}
+
+.page-subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1rem;
+  margin-left: 3.25rem;
+}
+
+.new-booking-btn {
+  background: linear-gradient(90deg, #d4af37 0%, #f4d03f 100%) !important;
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+  padding: 0.75rem 1.5rem !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3) !important;
+  transition: all 0.3s ease !important;
+  height: auto !important;
+}
+
+.new-booking-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5) !important;
+}
+
+.new-booking-btn mat-icon {
+  margin-right: 0.5rem;
+  color: #1a1a1a !important;
+}
+
+/* Tabs */
+.tabs-section {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 2px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.tab-button mat-icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.tab-button:hover {
+  color: var(--casino-gold);
+  background: rgba(255, 193, 7, 0.05);
+}
+
+.tab-button.active {
+  color: var(--casino-gold);
+  border-bottom-color: var(--casino-gold);
+}
+
+/* Filtros */
+.filters-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.search-field {
+  flex: 1;
+  min-width: 300px;
+}
+
+.filter-field {
+  min-width: 200px;
+}
+
+/* Form fields personalizados */
+::ng-deep .bookings-container .mat-mdc-form-field {
+  --mdc-outlined-text-field-label-text-color: rgba(255, 255, 255, 0.7);
+  --mdc-outlined-text-field-input-text-color: #ffffff;
+  --mdc-outlined-text-field-outline-color: rgba(255, 193, 7, 0.3);
+  --mdc-outlined-text-field-focus-outline-color: var(--casino-gold);
+  --mdc-outlined-text-field-hover-outline-color: rgba(255, 193, 7, 0.5);
+  --mdc-outlined-text-field-focus-label-text-color: var(--casino-gold);
+  --mat-form-field-focus-select-arrow-color: var(--casino-gold);
+  --mat-select-arrow-color: var(--casino-gold);
+  --mat-select-focused-arrow-color: var(--casino-gold);
+}
+
+::ng-deep .bookings-container .mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+::ng-deep .bookings-container .mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+::ng-deep .bookings-container .mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: var(--casino-gold) !important;
+}
+
+::ng-deep .bookings-container .mat-mdc-form-field.mat-focused .mat-mdc-floating-label {
+  color: var(--casino-gold) !important;
+}
+
+::ng-deep .bookings-container .mat-mdc-form-field .mat-mdc-select-value {
+  color: #ffffff;
+}
+
+::ng-deep .bookings-container .mat-mdc-form-field mat-icon {
+  color: var(--casino-gold);
+}
+
+/* Loading */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+}
+
+::ng-deep .loading-container .mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: var(--casino-gold);
+}
+
+/* Section header */
+.section-header {
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+/* Card de bookings */
+.bookings-card {
+  background: rgba(42, 42, 42, 0.5) !important;
+  border: 2px solid rgba(255, 193, 7, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 0 !important;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Tabla */
+.bookings-table {
+  width: 100%;
+  background: transparent !important;
+}
+
+::ng-deep .bookings-table .mat-mdc-header-row {
+  background: rgba(255, 193, 7, 0.1);
+  border-bottom: 2px solid rgba(255, 193, 7, 0.3);
+}
+
+::ng-deep .bookings-table .mat-mdc-header-cell {
+  color: var(--casino-gold) !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem 0.75rem;
+  border: none !important;
+}
+
+.booking-row {
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(255, 193, 7, 0.1);
+}
+
+.booking-row:hover {
+  background: rgba(255, 193, 7, 0.05) !important;
+}
+
+::ng-deep .bookings-table .mat-mdc-cell {
+  color: #ffffff;
+  padding: 1.25rem 0.75rem;
+  border: none !important;
+  font-size: 0.95rem;
+}
+
+/* Botón PDF */
+.pdf-button {
+  position: relative;
+  background: rgba(255, 193, 7, 0.1) !important;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px !important;
+  width: 48px;
+  height: 48px;
+}
+
+.pdf-button mat-icon {
+  color: var(--casino-gold) !important;
+}
+
+.pdf-button .download-icon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.pdf-button:hover {
+  background: rgba(255, 193, 7, 0.2) !important;
+  border-color: var(--casino-gold);
+}
+
+/* Booking ID */
+.booking-id {
+  font-weight: 700;
+  color: var(--casino-gold);
+  font-size: 1rem;
+}
+
+/* Room badge */
+.room-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: rgba(255, 193, 7, 0.15);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--casino-gold);
+  font-size: 0.95rem;
+}
+
+/* Invoice date */
+.invoice-date {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.date {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.invoice-number {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Precios */
+.price-value {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+.price-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 0.25rem;
+}
+
+/* Status badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.status-paid {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-pending {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-badge mat-icon {
+  font-size: 1.1rem;
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Fix payment button */
+.fix-payment-btn {
+  background: linear-gradient(135deg, #6b46c1 0%, #8b5cf6 100%) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(107, 70, 193, 0.3) !important;
+  transition: all 0.3s ease !important;
+  height: auto !important;
+}
+
+.fix-payment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 70, 193, 0.5) !important;
+}
+
+.fix-payment-btn mat-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+/* Botones de acción */
+.actions-buttons {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.action-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  min-width: 36px !important;
+}
+
+.action-btn mat-icon {
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn {
+  background: rgba(33, 150, 243, 0.1) !important;
+  border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.edit-btn mat-icon {
+  color: #2196f3 !important;
+}
+
+.edit-btn:hover {
+  background: rgba(33, 150, 243, 0.2) !important;
+  border-color: #2196f3;
+}
+
+.delete-btn {
+  background: rgba(244, 67, 54, 0.1) !important;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.delete-btn mat-icon {
+  color: #f44336 !important;
+}
+
+.delete-btn:hover {
+  background: rgba(244, 67, 54, 0.2) !important;
+  border-color: #f44336;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bookings-container {
+    padding: 1rem;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .filters-section {
+    flex-direction: column;
+  }
+
+  .search-field,
+  .filter-field {
+    min-width: 100%;
+  }
+
+  .filter-group {
+    flex-direction: column;
+  }
+}

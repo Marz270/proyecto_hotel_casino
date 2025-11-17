@@ -1,0 +1,229 @@
+.confirmation-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+  padding: 2rem;
+}
+
+.confirmation-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  padding: 3rem;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-icon-wrapper {
+  margin-bottom: 1.5rem;
+  animation: scaleIn 0.5s ease-out 0.2s both;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-icon {
+  font-size: 120px;
+  width: 120px;
+  height: 120px;
+  color: #d4af37;
+  filter: drop-shadow(0 4px 8px rgba(212, 175, 55, 0.3));
+}
+
+.confirmation-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+  animation: fadeIn 0.6s ease-out 0.4s both;
+}
+
+.confirmation-subtitle {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 2rem;
+  animation: fadeIn 0.6s ease-out 0.5s both;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.booking-details-card {
+  margin: 2rem 0;
+  text-align: left;
+  animation: fadeIn 0.6s ease-out 0.6s both;
+  background: #2a2a2a !important;
+}
+
+.booking-details-card mat-card-header {
+  margin-bottom: 1.5rem;
+}
+
+.booking-details-card mat-card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #444;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row mat-icon {
+  color: #d4af37;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #e0e0e0;
+  min-width: 100px;
+}
+
+.detail-value {
+  color: #ffffff;
+  font-weight: 500;
+  flex: 1;
+}
+
+.total-row {
+  background: #f8f9fa;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  border: 2px solid #d4af37;
+}
+
+.total-row .detail-label,
+.total-row .detail-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.additional-info {
+  background: #f8f5e6;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  animation: fadeIn 0.6s ease-out 0.7s both;
+}
+
+.additional-info p {
+  margin: 0.5rem 0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.info-icon {
+  color: #d4af37;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  animation: fadeIn 0.6s ease-out 0.8s both;
+}
+
+.action-buttons button {
+  min-width: 200px;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #c9a22b 100%) !important;
+  color: white !important;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.secondary-btn {
+  border: 2px solid #d4af37 !important;
+  color: #d4af37 !important;
+}
+
+.secondary-btn:hover {
+  background: #f8f5e6 !important;
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .confirmation-container {
+    padding: 1rem;
+  }
+
+  .confirmation-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .confirmation-title {
+    font-size: 2rem;
+  }
+
+  .confirmation-subtitle {
+    font-size: 1rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .action-buttons button {
+    width: 100%;
+  }
+}

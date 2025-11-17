@@ -1,0 +1,77 @@
+<div class="login-container">
+  <!-- Logo translúcido de fondo -->
+  <div class="background-logo">
+    <img src="SALTO_logo_blanco.svg" alt="Background Logo" />
+  </div>
+
+  <div class="login-card-wrapper">
+    <div class="login-card">
+      <!-- Título principal -->
+      <div class="login-header">
+        <h1 class="login-title">Iniciar Sesión</h1>
+        <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Campo Usuario -->
+        <div class="form-group">
+          <input
+            type="text"
+            formControlName="username"
+            placeholder="Usuario o Email"
+            class="form-input"
+            [class.error]="loginForm.get('username')?.touched && loginForm.get('username')?.errors"
+          />
+          @if (loginForm.get('username')?.touched && loginForm.get('username')?.errors) {
+          <span class="error-message">{{ getErrorMessage('username') }}</span>
+          }
+        </div>
+
+        <!-- Campo Contraseña -->
+        <div class="form-group">
+          <div class="password-wrapper">
+            <input
+              [type]="hidePassword() ? 'password' : 'text'"
+              formControlName="password"
+              placeholder="Contraseña"
+              class="form-input"
+              [class.error]="
+                loginForm.get('password')?.touched && loginForm.get('password')?.errors
+              "
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePasswordVisibility()"
+              [attr.aria-label]="'Mostrar contraseña'"
+            >
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors) {
+          <span class="error-message">{{ getErrorMessage('password') }}</span>
+          }
+        </div>
+
+        <!-- Botón de Login -->
+        <button type="submit" class="login-button" [disabled]="loading()">
+          @if (loading()) {
+          <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+          <span>Iniciando sesión...</span>
+          } @else {
+          <span>Login</span>
+          }
+        </button>
+      </form>
+
+      <!-- Información de prueba -->
+      <div class="test-credentials">
+        <p class="test-title">Credenciales de prueba</p>
+        <div class="credentials-grid">
+          <div class="credential-item"><strong>Admin:</strong> admin / admin123</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

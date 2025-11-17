@@ -1,0 +1,132 @@
+<div class="create-booking-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button mat-icon-button class="back-button" (click)="onCancel()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="page-title">Nueva Reserva</h1>
+  </div>
+
+  <!-- Formulario -->
+  <div class="booking-card">
+    <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+      <!-- Información del Cliente -->
+      <div class="form-section">
+        <h2 class="section-title">
+          <mat-icon>person</mat-icon>
+          Información del Cliente
+        </h2>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nombre del Cliente</mat-label>
+            <mat-icon matIconPrefix>badge</mat-icon>
+            <input matInput formControlName="client_name" placeholder="Ej: Juan Pérez" />
+            @if (bookingForm.get('client_name')?.touched && bookingForm.get('client_name')?.invalid)
+            {
+            <mat-error>{{ getErrorMessage('client_name') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Información de la Reserva -->
+      <div class="form-section">
+        <h2 class="section-title">
+          <mat-icon>hotel</mat-icon>
+          Detalles de la Reserva
+        </h2>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Habitación</mat-label>
+            <mat-icon matIconPrefix>meeting_room</mat-icon>
+            <mat-select
+              formControlName="room_number"
+              (selectionChange)="onRoomChange($event.value)"
+            >
+              @for (room of filteredRooms; track room.room_number) {
+              <mat-option [value]="room.room_number">
+                Habitación {{ room.room_number }} - {{ room.room_type }} (${{
+                  room.price_per_night
+                }}/noche)
+              </mat-option>
+              }
+            </mat-select>
+            @if (bookingForm.get('room_number')?.touched && bookingForm.get('room_number')?.invalid)
+            {
+            <mat-error>{{ getErrorMessage('room_number') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Fecha de Entrada</mat-label>
+            <mat-icon matIconPrefix>calendar_today</mat-icon>
+            <input
+              matInput
+              [matDatepicker]="pickerIn"
+              formControlName="check_in"
+              [min]="minDate"
+              (dateChange)="onDateChange()"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerIn"></mat-datepicker-toggle>
+            <mat-datepicker #pickerIn></mat-datepicker>
+            @if (bookingForm.get('check_in')?.touched && bookingForm.get('check_in')?.invalid) {
+            <mat-error>{{ getErrorMessage('check_in') }}</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Fecha de Salida</mat-label>
+            <mat-icon matIconPrefix>calendar_today</mat-icon>
+            <input
+              matInput
+              [matDatepicker]="pickerOut"
+              formControlName="check_out"
+              [min]="minCheckOutDate || minDate"
+              (dateChange)="onDateChange()"
+            />
+            <mat-datepicker-toggle matIconSuffix [for]="pickerOut"></mat-datepicker-toggle>
+            <mat-datepicker #pickerOut></mat-datepicker>
+            @if (bookingForm.get('check_out')?.touched && bookingForm.get('check_out')?.invalid) {
+            <mat-error>{{ getErrorMessage('check_out') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Resumen de Precio -->
+      @if (calculateTotal() > 0) {
+      <div class="price-summary">
+        <div class="summary-content">
+          <mat-icon>payments</mat-icon>
+          <div class="summary-text">
+            <span class="summary-label">Total a Pagar</span>
+            <span class="summary-amount">${{ calculateTotal().toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+      }
+
+      <!-- Botones de Acción -->
+      <div class="form-actions">
+        <button
+          mat-stroked-button
+          type="button"
+          class="cancel-btn"
+          (click)="onCancel()"
+          [disabled]="isSubmitting"
+        >
+          <mat-icon>close</mat-icon>
+          Cancelar
+        </button>
+        <button mat-raised-button type="submit" class="submit-btn" [disabled]="isSubmitting">
+          <mat-icon>{{ isSubmitting ? 'hourglass_empty' : 'check' }}</mat-icon>
+          {{ isSubmitting ? 'Guardando...' : 'Crear Reserva' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

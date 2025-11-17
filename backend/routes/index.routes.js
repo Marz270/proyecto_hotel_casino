@@ -1,7 +1,21 @@
 const express = require("express");
+const cacheService = require("../services/cacheService");
 const { body, param, validationResult } = require("express-validator");
 const BookingServiceFactory = require("../services/bookingServiceFactory");
+const {
+  paymentCircuitBreaker,
+  getCircuitBreakerStatus,
+  resetCircuitBreaker,
+} = require("../patterns/circuit-breaker/paymentCircuitBreaker");
 const router = express.Router();
+
+// Competing Consumers Pattern - Queue routes
+const queueRoutes = require("./queue.routes");
+router.use(queueRoutes);
+
+// Authentication routes
+const authRoutes = require("./auth.routes");
+router.use("/auth", authRoutes);
 
 // Inyección de dependencia - el servicio se resuelve en runtime
 const bookingService = BookingServiceFactory.createBookingService();
@@ -28,15 +42,124 @@ router.get("/", (req, res) => {
       version: process.env.APP_VERSION || "1.0",
       booking_mode: process.env.BOOKING_MODE || "pg",
       endpoints: {
+        "GET /health": "Health check endpoint",
+        "POST /auth/register": "Register new user",
+        "POST /auth/login": "Login user (returns JWT token)",
+        "GET /auth/me": "Get authenticated user info (requires token)",
+        "POST /auth/verify": "Verify JWT token validity",
         "GET /rooms": "Get available rooms",
         "GET /bookings": "Get all reservations",
         "POST /reservations": "Create new reservation",
-        "POST /payments": "Process payment",
+        "POST /payments": "Process payment (with Circuit Breaker)",
+        "GET /payments/circuit-status": "Get Circuit Breaker status",
+        "POST /payments/circuit-reset": "Reset Circuit Breaker (admin)",
         "GET /reports": "Get admin reports",
         "GET /bookings/:id": "Get booking by ID",
         "DELETE /bookings/:id": "Delete booking by ID",
       },
     },
+  });
+});
+
+// Health check endpoint - Health Endpoint Monitoring Pattern
+router.get("/health", async (req, res) => {
+  const healthCheck = {
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
+    version: process.env.APP_VERSION || "1.0.0",
+    checks: {
+      database: { status: "unknown" },
+      memory: { status: "unknown" },
+      circuitBreaker: { status: "unknown" },
+    },
+  };
+
+  let isHealthy = true;
+
+  // 1. Check database connection
+  try {
+    const db = require("../database/db");
+    const result = await db.query("SELECT 1 as health");
+
+    if (result.rows && result.rows[0].health === 1) {
+      healthCheck.checks.database = {
+        status: "healthy",
+        responseTime: "< 10ms",
+      };
+    } else {
+      throw new Error("Database check failed");
+    }
+  } catch (error) {
+    isHealthy = false;
+    healthCheck.checks.database = {
+      status: "unhealthy",
+      error: error.message,
+    };
+  }
+
+  // 2. Check memory usage
+  try {
+    const memUsage = process.memoryUsage();
+    const memoryUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024);
+    const memoryTotalMB = Math.round(memUsage.heapTotal / 1024 / 1024);
+    const memoryPercentage = Math.round(
+      (memUsage.heapUsed / memUsage.heapTotal) * 100
+    );
+
+    healthCheck.checks.memory = {
+      status: memoryPercentage < 90 ? "healthy" : "warning",
+      used: `${memoryUsedMB} MB`,
+      total: `${memoryTotalMB} MB`,
+      percentage: `${memoryPercentage}%`,
+    };
+
+    if (memoryPercentage >= 95) {
+      isHealthy = false;
+      healthCheck.checks.memory.status = "unhealthy";
+    }
+  } catch (error) {
+    healthCheck.checks.memory = {
+      status: "unhealthy",
+      error: error.message,
+    };
+  }
+
+  // 3. Check Circuit Breaker status
+  try {
+    const cbStatus = getCircuitBreakerStatus();
+    healthCheck.checks.circuitBreaker = {
+      status: cbStatus.state === "OPEN" ? "degraded" : "healthy",
+      state: cbStatus.state,
+      stats: {
+        totalRequests: cbStatus.stats.fires,
+        failures: cbStatus.stats.failures,
+        successRate: cbStatus.stats.successRate,
+      },
+    };
+
+    // Circuit breaker OPEN no es crítico para health general
+    if (cbStatus.state === "OPEN") {
+      healthCheck.checks.circuitBreaker.message =
+        "Payment service circuit is open (degraded mode)";
+    }
+  } catch (error) {
+    healthCheck.checks.circuitBreaker = {
+      status: "unknown",
+      error: error.message,
+    };
+  }
+
+  // Set overall status
+  healthCheck.status = isHealthy ? "healthy" : "unhealthy";
+
+  // Return appropriate HTTP status code
+  const statusCode = isHealthy ? 200 : 503;
+
+  res.status(statusCode).json({
+    success: isHealthy,
+    data: healthCheck,
   });
 });
 
@@ -92,6 +215,11 @@ router.post(
       const result = await bookingService.createBooking(req.body);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al crear reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log("[CACHE INVALIDATION] Booking created, cache invalidated");
+
         res.status(201).json({
           success: true,
           data: result.data,
@@ -161,6 +289,11 @@ router.delete(
       const result = await bookingService.deleteBooking(req.params.id);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al eliminar reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log("[CACHE INVALIDATION] Booking deleted, cache invalidated");
+
         res.json({
           success: true,
           data: result.data,
@@ -183,48 +316,6 @@ router.delete(
     }
   }
 );
-
-// GET /rooms - Obtener habitaciones disponibles
-router.get("/rooms", async (req, res) => {
-  try {
-    const { check_in, check_out } = req.query;
-
-    let query = `
-      SELECT r.*, 
-        CASE WHEN EXISTS (
-          SELECT 1 FROM bookings b 
-          WHERE b.room_number = r.room_number 
-          AND (
-            (b.check_in <= $1 AND b.check_out > $1) OR
-            (b.check_in < $2 AND b.check_out >= $2) OR
-            (b.check_in >= $1 AND b.check_out <= $2)
-          )
-        ) THEN false ELSE true END as available
-      FROM rooms r
-      ORDER BY r.room_number
-    `;
-
-    const values =
-      check_in && check_out
-        ? [check_in, check_out]
-        : ["1900-01-01", "1900-01-01"];
-
-    const result = await require("../database/db").query(query, values);
-
-    res.json({
-      success: true,
-      data: result.rows,
-      filters: { check_in, check_out },
-      count: result.rows.length,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "Error fetching rooms",
-      details: error.message,
-    });
-  }
-});
 
 // POST /reservations - Crear nueva reserva (alias para /bookings)
 router.post(
@@ -250,6 +341,13 @@ router.post(
       const result = await bookingService.createBooking(req.body);
 
       if (result.success) {
+        // CACHE-ASIDE: Invalidar cache de disponibilidad al crear reserva
+        // Esto garantiza que las próximas consultas obtengan datos actualizados
+        cacheService.invalidatePattern("rooms:availability:*");
+        console.log(
+          "[CACHE INVALIDATION] Reservation created, cache invalidated"
+        );
+
         res.status(201).json({
           success: true,
           data: result.data,
@@ -273,7 +371,7 @@ router.post(
   }
 );
 
-// POST /payments - Procesar pago
+// POST /payments - Procesar pago con Circuit Breaker
 router.post(
   "/payments",
   [
@@ -292,31 +390,82 @@ router.post(
     try {
       const { reservation_id, amount, payment_method } = req.body;
 
-      // Simular procesamiento de pago
-      const paymentResult = {
-        id: Math.floor(Math.random() * 10000),
+      // Procesar pago a través del Circuit Breaker
+      // El circuit breaker protege de fallos en cascada del servicio de pagos
+      const paymentResult = await paymentCircuitBreaker.fire({
         reservation_id,
         amount,
         payment_method,
-        status: "approved",
-        transaction_id: `TXN_${Date.now()}`,
-        processed_at: new Date().toISOString(),
-      };
+      });
 
+      // Si el pago está en cola (fallback), responder con 202 Accepted
+      if (paymentResult.queued) {
+        return res.status(202).json({
+          success: true,
+          data: paymentResult,
+          message: paymentResult.message,
+          warning:
+            "Payment service is temporarily unavailable. Payment queued for processing.",
+        });
+      }
+
+      // Pago procesado exitosamente
       res.status(201).json({
         success: true,
         data: paymentResult,
         message: "Payment processed successfully",
       });
     } catch (error) {
+      // Error no manejado por el circuit breaker
+      console.error("Payment error:", error);
+
       res.status(500).json({
         success: false,
         error: "Payment processing failed",
         details: error.message,
+        code: error.code || "PAYMENT_ERROR",
       });
     }
   }
 );
+
+// GET /payments/circuit-status - Obtener estado del Circuit Breaker
+router.get("/payments/circuit-status", (req, res) => {
+  try {
+    const status = getCircuitBreakerStatus();
+
+    res.json({
+      success: true,
+      data: status,
+      message: "Circuit Breaker status retrieved successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to get circuit breaker status",
+      details: error.message,
+    });
+  }
+});
+
+// POST /payments/circuit-reset - Resetear Circuit Breaker manualmente (admin)
+router.post("/payments/circuit-reset", (req, res) => {
+  try {
+    resetCircuitBreaker();
+
+    res.json({
+      success: true,
+      message: "Circuit Breaker reset to CLOSED state",
+      data: getCircuitBreakerStatus(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "Failed to reset circuit breaker",
+      details: error.message,
+    });
+  }
+});
 
 // GET /reports - Obtener reportes administrativos
 router.get("/reports", async (req, res) => {

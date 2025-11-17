@@ -1,0 +1,121 @@
+<div class="home-container">
+  <!-- Columna Izquierda: Texto -->
+  <div class="content-left">
+    <h1 class="section-title">SOBRE NUESTRO HOTEL</h1>
+    <div class="title-underline"></div>
+
+    <p class="description">
+      Nos ubicamos en el corazón de la ciudad. Frente a la emblemática Plaza Artigas, sobre calle
+      Uruguay y 25 de Agosto. Estamos a 1 km de la Terminal de buses Salto Shopping, a 10 kilómetros
+      de Termas del Daymán y a 16kms del paso de frontera con Argentina (Puente Internacional Salto
+      Grande). Somos un Hotel de 4 estrellas con la combinación ideal entre diversión, gastronomía y
+      relax. Dentro de nuestro complejo encontrarás:
+    </p>
+
+    <ul class="features-list">
+      <li>
+        <mat-icon class="icon">hotel</mat-icon>
+        <span class="text"
+          >Habitaciones modernas, confortables y con vistas privilegiadas a la ciudad.</span
+        >
+      </li>
+      <li>
+        <mat-icon class="icon">local_cafe</mat-icon>
+        <span class="text">Café & Bar con amplio horario.</span>
+      </li>
+      <li>
+        <mat-icon class="icon">casino</mat-icon>
+        <span class="text">Casino con slots de última generación.</span>
+      </li>
+      <li>
+        <mat-icon class="icon">meeting_room</mat-icon>
+        <span class="text">Salas de reuniones y conferencias.</span>
+      </li>
+      <li>
+        <mat-icon class="icon">fitness_center</mat-icon>
+        <span class="text">Gimnasio con clases personalizadas.</span>
+      </li>
+      <li>
+        <mat-icon class="icon">pool</mat-icon>
+        <span class="text">Piscina al aire libre.</span>
+      </li>
+      <li>
+        <mat-icon class="icon">local_parking</mat-icon>
+        <span class="text">Parking con cupos limitados.</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Columna Derecha: Video -->
+  <div class="content-right">
+    <div class="video-wrapper">
+      <div class="video-container">
+        <video
+          class="hotel-video"
+          src="https://saltohotelcasino.uy/wp-content/uploads/2022/09/SHC_SPOT-HOTEL-2019.mp4"
+          controls
+          loop
+          playsinline
+          poster="https://saltohotelcasino.uy/wp-content/uploads/2022/09/saltohotelcasino_video_main.jpg"
+        >
+          Tu navegador no soporta el elemento de video.
+        </video>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de Habitaciones -->
+<div class="rooms-section">
+  <div class="rooms-container">
+    <h2 class="rooms-title">NUESTRAS HABITACIONES</h2>
+    <div class="rooms-underline"></div>
+
+    <div class="rooms-grid">
+      <!-- Skeleton Loaders mientras carga -->
+      <ng-container *ngIf="loading">
+        <mat-card class="room-card skeleton" *ngFor="let i of [1, 2, 3, 4]">
+          <div class="skeleton-image"></div>
+          <mat-card-header>
+            <div class="skeleton-title"></div>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text short"></div>
+          </mat-card-content>
+          <mat-card-actions>
+            <div class="skeleton-button"></div>
+          </mat-card-actions>
+        </mat-card>
+      </ng-container>
+
+      <!-- Cards reales cuando cargan -->
+      <ng-container *ngIf="!loading">
+        <mat-card class="room-card" *ngFor="let room of rooms">
+          <div class="room-image-wrapper">
+            <img [src]="room.image_url" [alt]="room.type_name" class="room-image" />
+          </div>
+          <mat-card-header>
+            <mat-card-title class="room-title">{{ room.type_name }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="room-description">{{ room.description }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button
+              mat-raised-button
+              color="primary"
+              [routerLink]="['/rooms']"
+              [queryParams]="{ type: room.type_name.toLowerCase() }"
+              class="room-button"
+            >
+              Ver Disponibilidad
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </ng-container>
+    </div>
+  </div>
+</div>

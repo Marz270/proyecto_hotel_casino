@@ -1,0 +1,54 @@
+<div class="rooms-showcase-container">
+  <div class="header-section">
+    <h1 class="main-title">NUESTRAS ACOMODACIONES DE PRIMER NIVEL</h1>
+    <div class="title-underline"></div>
+  </div>
+
+  @if (loading()) {
+  <div class="loading-container">
+    <mat-spinner [diameter]="60"></mat-spinner>
+    <p>Cargando habitaciones...</p>
+  </div>
+  } @else {
+  <div class="rooms-grid">
+    @for (roomType of roomTypesDisplay(); track roomType.id) {
+    <div class="room-card">
+      <div class="room-image-container">
+        <img [src]="roomType.image_url" [alt]="roomType.type_name" class="room-image" />
+      </div>
+
+      <div class="room-content">
+        <h2 class="room-title">{{ roomType.type_name.toUpperCase() }}</h2>
+
+        <p class="occupancy">
+          <mat-icon class="occupancy-icon">person</mat-icon>
+          OCUPACIÓN MÁXIMA: {{ roomType.max_guests }}
+          {{ roomType.max_guests === 1 ? 'PERSONA' : 'PERSONAS' }}
+        </p>
+
+        <p class="room-description">{{ roomType.description }}</p>
+
+        <div class="room-footer">
+          <div class="price-section">
+            <span class="price-label">Desde</span>
+            <span class="price-amount">${{ roomType.price_per_night }}</span>
+            <span class="price-period">/ noche</span>
+          </div>
+          <div class="action-buttons">
+            <button
+              mat-raised-button
+              class="book-button"
+              [routerLink]="['/bookings/create']"
+              [queryParams]="{ roomType: roomType.type_name }"
+            >
+              <mat-icon>event_available</mat-icon>
+              RESERVAR AHORA
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

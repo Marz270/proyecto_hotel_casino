@@ -1,0 +1,79 @@
+@startuml external-configuration-flow
+!define RECTANGLE class
+
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+title External Configuration Store Pattern - Flow Diagram
+
+actor "Developer/Ops" as Dev
+participant "Environment\nVariables" as Env
+participant "Docker\nCompose" as Docker
+participant "Backend\nService" as Backend
+participant "Booking\nServiceFactory" as Factory
+database "PostgreSQL" as DB
+collections "Mock\nData" as Mock
+
+== Initial Configuration ==
+Dev -> Env: Set BOOKING_MODE=pg
+Dev -> Docker: docker-compose up -d
+Docker -> Backend: Start with\nBOOKING_MODE=pg
+activate Backend
+
+Backend -> Factory: createBookingService()
+activate Factory
+Factory -> Factory: Read process.env.BOOKING_MODE
+note right: mode = "pg"
+
+Factory --> Backend: bookingService.pg.js
+deactivate Factory
+Backend -> DB: Connect to PostgreSQL
+activate DB
+DB --> Backend: Connection established
+deactivate DB
+
+note over Backend: Service ready\nwith PostgreSQL backend
+
+== Configuration Change (Zero Downtime) ==
+Dev -> Env: Set BOOKING_MODE=mock
+Dev -> Docker: docker-compose restart backend
+Docker -> Backend: Restart with\nBOOKING_MODE=mock
+deactivate Backend
+activate Backend
+
+Backend -> Factory: createBookingService()
+activate Factory
+Factory -> Factory: Read process.env.BOOKING_MODE
+note right: mode = "mock"
+
+Factory --> Backend: bookingService.mock.js
+deactivate Factory
+Backend -> Mock: Initialize mock data
+activate Mock
+Mock --> Backend: In-memory data ready
+deactivate Mock
+
+note over Backend: Service ready\nwith Mock backend\n(NO PostgreSQL needed)
+
+== Rollback Configuration ==
+Dev -> Env: Set BOOKING_MODE=pg
+Dev -> Docker: docker-compose restart backend
+Docker -> Backend: Restart with\nBOOKING_MODE=pg
+deactivate Backend
+activate Backend
+
+Backend -> Factory: createBookingService()
+activate Factory
+Factory -> Factory: Read process.env.BOOKING_MODE
+note right: mode = "pg"
+
+Factory --> Backend: bookingService.pg.js
+deactivate Factory
+Backend -> DB: Reconnect to PostgreSQL
+activate DB
+DB --> Backend: Connection restored
+deactivate DB
+
+note over Backend: Configuration rolled back\nSame code, different behavior
+
+@enduml

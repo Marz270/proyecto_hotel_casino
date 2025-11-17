@@ -1,0 +1,104 @@
+@startuml gateway-offloading-sequence
+title Gateway Offloading - Flujo de Request con Seguridad
+
+actor Cliente
+participant "Nginx Gateway\n(DMZ)" as Nginx
+box "Funcionalidades Offloaded" #LightBlue
+    participant "Rate Limiter" as RateLimit
+    participant "SSL Terminator" as SSL
+    participant "CORS Handler" as CORS
+    participant "Logger" as Logger
+    participant "Compressor" as Gzip
+end box
+participant "Backend API\n(Internal)" as Backend
+database PostgreSQL as DB
+
+== Request Processing ==
+
+Cliente -> Nginx: HTTPS POST /api/bookings\n(SSL encrypted)
+activate Nginx
+
+Nginx -> SSL: Decrypt TLS
+activate SSL
+SSL --> Nginx: Plain HTTP request
+deactivate SSL
+
+Nginx -> Logger: Log request\n(IP, timestamp, path)
+activate Logger
+Logger --> Nginx: Logged
+deactivate Logger
+
+Nginx -> RateLimit: Check rate limit\nfor IP: 192.168.1.100
+activate RateLimit
+
+alt Rate limit exceeded
+    RateLimit --> Nginx: 429 Too Many Requests
+    Nginx --> Cliente: 429 Too Many Requests\n+ Retry-After header
+else Rate limit OK
+    RateLimit --> Nginx: OK (allowed)
+    deactivate RateLimit
+    
+    Nginx -> CORS: Validate Origin\nAdd CORS headers
+    activate CORS
+    CORS --> Nginx: Headers added
+    deactivate CORS
+    
+    Nginx -> Nginx: Add Security Headers:\n• X-Content-Type-Options\n• X-Frame-Options\n• X-XSS-Protection
+    
+    Nginx -> Backend: HTTP POST /api/bookings\n+ X-Real-IP\n+ X-Forwarded-For\n+ X-Forwarded-Proto
+    activate Backend
+    
+    Backend -> DB: INSERT INTO bookings...
+    activate DB
+    DB --> Backend: Success
+    deactivate DB
+    
+    Backend --> Nginx: 201 Created\n{booking data}
+    deactivate Backend
+    
+    Nginx -> Gzip: Compress response\nif client accepts gzip
+    activate Gzip
+    Gzip --> Nginx: Compressed payload
+    deactivate Gzip
+    
+    Nginx -> Logger: Log response\n(status, size, time)
+    activate Logger
+    Logger --> Nginx: Logged
+    deactivate Logger
+    
+    Nginx -> SSL: Encrypt response (TLS)
+    activate SSL
+    SSL --> Nginx: Encrypted
+    deactivate SSL
+    
+    Nginx --> Cliente: HTTPS 201 Created\n(encrypted, compressed,\nwith security headers)
+end
+
+deactivate Nginx
+
+== Benefits Highlighted ==
+
+note over Nginx
+  <b>Gateway Offloading Benefits:</b>
+  
+  1. <b>SSL Termination:</b> Backend no necesita SSL
+  2. <b>Rate Limiting:</b> Protege contra DDoS
+  3. <b>Logging:</b> Centralizado y consistente
+  4. <b>Compression:</b> Reduce bandwidth ~70%
+  5. <b>CORS:</b> Manejo uniforme de cross-origin
+  6. <b>Security Headers:</b> Aplicados automáticamente
+  
+  Backend se concentra solo en lógica de negocio
+end note
+
+note over Backend
+  Backend simplificado:
+  • No maneja SSL/TLS
+  • No valida rate limits
+  • No agrega headers de seguridad
+  • No comprime responses
+  
+  = Código más limpio y mantenible
+end note
+
+@enduml

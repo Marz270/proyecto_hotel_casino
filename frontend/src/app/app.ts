@@ -1,42 +1,28 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { filter, firstValueFrom } from 'rxjs';
-import { MatTabChangeEvent } from '@angular/material/tabs';
+import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from './services/http-service';
 import { AppStateService } from './services/app-state-service';
+import { AuthService } from './services/auth.service';
 import { ApiInfo } from './models/api.model';
 import { MATERIAL_MODULES } from './material.config';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, ...MATERIAL_MODULES],
+  imports: [RouterOutlet, RouterLink, CommonModule, ...MATERIAL_MODULES],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
 export class App implements OnInit {
   private readonly httpService = inject(HttpService);
-  private readonly router = inject(Router);
   protected readonly appState = inject(AppStateService);
-
-  protected readonly currentRoute = signal('habitaciones');
-
-  private readonly routeMap = ['/habitaciones', '/reservas', '/reportes'];
+  protected readonly authService = inject(AuthService);
 
   async ngOnInit() {
     await this.checkApiStatus();
-    this.setupRouteTracking();
-  }
-
-  private setupRouteTracking() {
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        const route = event.urlAfterRedirects.split('/')[1] || 'habitaciones';
-        this.currentRoute.set(route);
-      });
   }
 
   async checkApiStatus() {
@@ -57,20 +43,11 @@ export class App implements OnInit {
     }
   }
 
-  getActiveTabIndex(): number {
-    const currentPath = `/${this.currentRoute()}`;
-    return Math.max(0, this.routeMap.indexOf(currentPath));
-  }
-
-  onTabChange(event: MatTabChangeEvent) {
-    const route = this.routeMap[event.index];
-    if (route) {
-      this.router.navigate([route]);
-      this.appState.clearError();
-    }
-  }
-
   async refreshApiStatus() {
     await this.checkApiStatus();
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }

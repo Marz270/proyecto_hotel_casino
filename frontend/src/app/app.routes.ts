@@ -1,29 +1,40 @@
 import { Routes } from '@angular/router';
+import { HomeComponent } from './pages/home/home';
+import { LoginComponent } from './pages/login/login';
+import { BookingsListComponent } from './pages/bookings-list/bookings-list';
+import { CreateBookingComponent } from './pages/create-booking/create-booking.component';
+import { RoomsShowcaseComponent } from './pages/rooms-showcase/rooms-showcase.component';
+import { BookingConfirmationComponent } from './pages/booking-confirmation/booking-confirmation.component';
+import { adminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/habitaciones',
-    pathMatch: 'full',
+    component: HomeComponent,
   },
   {
-    path: 'habitaciones',
-    loadComponent: () => import('./components/rooms/rooms').then((m) => m.RoomsComponent),
-    title: 'Habitaciones Disponibles - Hotel Casino',
+    path: 'login',
+    component: LoginComponent,
   },
   {
-    path: 'reservas',
-    loadComponent: () =>
-      import('./components/reservations/reservations').then((m) => m.ReservationsComponent),
-    title: 'Gestión de Reservas - Hotel Casino',
+    path: 'rooms',
+    component: RoomsShowcaseComponent,
   },
   {
-    path: 'reportes',
-    loadComponent: () => import('./components/reports/reports').then((m) => m.ReportsComponent),
-    title: 'Reportes Administrativos - Hotel Casino',
+    path: 'bookings/create',
+    component: CreateBookingComponent,
+  },
+  {
+    path: 'bookings/confirmation',
+    component: BookingConfirmationComponent,
+  },
+  {
+    path: 'bookings',
+    component: BookingsListComponent,
+    canActivate: [adminGuard],
   },
   {
     path: '**',
-    redirectTo: '/habitaciones',
+    redirectTo: '',
   },
 ];

@@ -1,0 +1,119 @@
+@startuml
+title Patrón Valet Key - Flujo Completo de Upload Seguro
+
+actor "Cliente\n(Huésped Hotel)" as Cliente
+participant "Backend API\n(Node.js)" as API
+participant "Valet Key\nService" as ValetKey
+database "PostgreSQL\n(upload_tokens)" as DB
+participant "Storage\n(S3 simulado)" as Storage
+
+== Fase 1: Solicitud de Token Temporal ==
+
+Cliente -> API: POST /bookings/15/upload-token\n{"documentType": "passport"}
+activate API
+
+API -> ValetKey: generateUploadToken(15, "passport")
+activate ValetKey
+
+ValetKey -> ValetKey: crypto.randomBytes(32)\ngenerar token aleatorio
+
+ValetKey -> DB: INSERT INTO upload_tokens\n(booking_id, token, document_type,\nexpires_at, used)
+activate DB
+DB --> ValetKey: Token guardado (ID=1)
+deactivate DB
+
+ValetKey --> API: {\n  token: "23b2b079...",\n  uploadUrl: "http://.../upload/23b2b079...",\n  expiresAt: "2025-10-30T12:52:03Z",\n  allowedTypes: ["pdf","jpg","png"]\n}
+deactivate ValetKey
+
+API --> Cliente: 200 OK\n{\n  token, uploadUrl,\n  expiresAt: +15min\n}
+deactivate API
+
+note right of Cliente
+  Cliente tiene 15 minutos
+  para usar este token
+end note
+
+== Fase 2: Upload de Documento (Primera Vez) ==
+
+Cliente -> API: PUT /upload/23b2b079...\nX-Filename: passport.pdf\n[archivo binario]
+activate API
+
+API -> ValetKey: validateToken("23b2b079...")
+activate ValetKey
+
+ValetKey -> DB: SELECT * FROM upload_tokens\nWHERE token = '23b2b079...'
+activate DB
+DB --> ValetKey: {\n  valid: true,\n  used: false,\n  expires_at: > NOW()\n}
+deactivate DB
+
+ValetKey --> API: Token válido ✅
+deactivate ValetKey
+
+API -> Storage: [Simular upload a S3]\nEn producción: upload directo
+activate Storage
+Storage --> API: Upload exitoso
+deactivate Storage
+
+API -> ValetKey: markTokenAsUsed("23b2b079...")
+activate ValetKey
+
+ValetKey -> DB: UPDATE upload_tokens\nSET used = true\nWHERE token = '23b2b079...'
+activate DB
+DB --> ValetKey: Token marcado como usado
+deactivate DB
+deactivate ValetKey
+
+API --> Cliente: 200 OK\n{\n  status: "uploaded",\n  filename: "passport.pdf"\n}
+deactivate API
+
+== Fase 3: Intento de Reuso (Ataque Bloqueado) ==
+
+Cliente -> API: PUT /upload/23b2b079...\n[intentar subir otro archivo]
+activate API
+
+API -> ValetKey: validateToken("23b2b079...")
+activate ValetKey
+
+ValetKey -> DB: SELECT * FROM upload_tokens\nWHERE token = '23b2b079...'
+activate DB
+DB --> ValetKey: {\n  valid: false,\n  used: true ❌\n}
+deactivate DB
+
+ValetKey --> API: Token inválido:\n"Token already used"
+deactivate ValetKey
+
+API --> Cliente: 403 Forbidden ❌\n{\n  error: "Token already used"\n}
+deactivate API
+
+note right of Cliente
+  Seguridad: Token de
+  uso único previene
+  reutilización maliciosa
+end note
+
+== Fase 4: Token Expirado (Después de 15 minutos) ==
+
+Cliente -> API: PUT /upload/[otro-token-viejo]
+activate API
+
+API -> ValetKey: validateToken("[token-expirado]")
+activate ValetKey
+
+ValetKey -> DB: SELECT * FROM upload_tokens\nWHERE token = '[token-expirado]'
+activate DB
+DB --> ValetKey: {\n  expires_at: < NOW() ⏰\n}
+deactivate DB
+
+ValetKey --> API: Token inválido:\n"Token expired"
+deactivate ValetKey
+
+API --> Cliente: 403 Forbidden ❌\n{\n  error: "Token expired"\n}
+deactivate API
+
+note right of Cliente
+  Expiración automática:
+  Tokens solo válidos
+  por 15 minutos
+end note
+
+@enduml

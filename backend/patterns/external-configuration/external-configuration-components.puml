@@ -1,0 +1,92 @@
+@startuml external-configuration-components
+!define RECTANGLE class
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+title External Configuration Store Pattern - Component Diagram
+
+package "External Configuration" {
+    [Environment Variables] as EnvVars
+    [.env File] as EnvFile
+    [Docker Secrets] as Secrets
+    [Kubernetes ConfigMaps] as K8s
+    
+    note right of EnvVars
+        BOOKING_MODE=pg
+        NODE_ENV=production
+        PGHOST=db
+        PGUSER=hoteluser
+    end note
+}
+
+package "Application Layer" {
+    [Backend Service] as Backend
+    
+    package "Factory Pattern" {
+        [BookingServiceFactory] as Factory
+        note right of Factory
+            Deferred Binding:
+            Resolves dependency
+            at runtime based on
+            BOOKING_MODE config
+        end note
+    }
+    
+    package "Service Implementations" {
+        [bookingService.pg.js] as PgService
+        [bookingService.mock.js] as MockService
+        
+        note bottom of PgService
+            PostgreSQL Implementation
+            - Real persistence
+            - ACID transactions
+            - Production ready
+        end note
+        
+        note bottom of MockService
+            In-Memory Implementation
+            - No database needed
+            - Fast testing
+            - Development mode
+        end note
+    }
+}
+
+package "Data Layer" {
+    database "PostgreSQL" as DB
+    collections "Mock Data\n(In-Memory)" as MockData
+}
+
+' Connections
+EnvVars --> Backend : Configuration
+EnvFile --> Backend : Load on startup
+Secrets --> Backend : Production secrets
+K8s --> Backend : Dynamic config
+
+Backend --> Factory : createBookingService()
+Factory ..> EnvVars : Read BOOKING_MODE
+
+Factory --> PgService : if mode == "pg"
+Factory --> MockService : if mode == "mock"
+
+PgService --> DB : Connect & Query
+MockService --> MockData : Read/Write
+
+' Legend
+legend right
+    |<#lightblue> Component |
+    |<#white> = Application code |
+    |<#palegreen> Configuration |
+    |<#white> = External config store |
+    |<#lightyellow> Database |
+    |<#white> = Data persistence |
+    
+    **Configuration Levels:**
+    1. Development: .env file
+    2. Docker: Environment variables
+    3. Kubernetes: ConfigMaps
+    4. Production: Docker Secrets
+endlegend
+
+@enduml
