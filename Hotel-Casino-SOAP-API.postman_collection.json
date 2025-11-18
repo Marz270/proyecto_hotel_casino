@@ -1,0 +1,48 @@
+{
+  "info": {
+    "name": "Hotel Casino - SOAP",
+    "description": "Servicio SOAP para consultar disponibilidad",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get WSDL",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/soap/booking?wsdl",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["soap", "booking"],
+          "query": [{ "key": "wsdl", "value": null }]
+        }
+      }
+    },
+    {
+      "name": "GetAvailability",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "text/xml" },
+          {
+            "key": "SOAPAction",
+            "value": "http://saltohotelcasino.uy/booking/GetAvailability"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://saltohotelcasino.uy/booking\">\r\n  <soap:Body>\r\n    <tns:GetAvailabilityRequest>\r\n      <tns:checkIn>2025-12-01</tns:checkIn>\r\n      <tns:checkOut>2025-12-05</tns:checkOut>\r\n    </tns:GetAvailabilityRequest>\r\n  </soap:Body>\r\n</soap:Envelope>"
+        },
+        "url": {
+          "raw": "http://localhost:3000/soap/booking",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["soap", "booking"]
+        }
+      }
+    }
+  ]
+}
