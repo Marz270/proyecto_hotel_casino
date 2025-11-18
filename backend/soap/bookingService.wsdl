@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="BookingService"
+    targetNamespace="http://saltohotelcasino.uy/booking"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://saltohotelcasino.ada/booking"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <types>
+        <xsd:schema targetNamespace="http://saltohotelcasino.ada/booking">
+            
+            <xsd:element name="GetAvailabilityRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="checkIn" type="xsd:date"/>
+                        <xsd:element name="checkOut" type="xsd:date"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="GetAvailabilityResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="availableRooms" type="tns:RoomList"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:complexType name="Room">
+                <xsd:sequence>
+                    <xsd:element name="roomNumber" type="xsd:int"/>
+                    <xsd:element name="roomType" type="xsd:string"/>
+                    <xsd:element name="pricePerNight" type="xsd:decimal"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="RoomList">
+                <xsd:sequence>
+                    <xsd:element name="room" type="tns:Room" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+        </xsd:schema>
+    </types>
+
+    <message name="GetAvailabilityRequestMessage">
+        <part name="parameters" element="tns:GetAvailabilityRequest"/>
+    </message>
+    <message name="GetAvailabilityResponseMessage">
+        <part name="parameters" element="tns:GetAvailabilityResponse"/>
+    </message>
+
+    <portType name="BookingServicePortType">
+        <operation name="GetAvailability">
+            <input message="tns:GetAvailabilityRequestMessage"/>
+            <output message="tns:GetAvailabilityResponseMessage"/>
+        </operation>
+    </portType>
+
+    <binding name="BookingServiceBinding" type="tns:BookingServicePortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="GetAvailability">
+            <soap:operation soapAction="http://saltohotelcasino.uy/booking/GetAvailability"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+        </operation>
+    </binding>
+
+    <service name="BookingService">
+        <port name="BookingServicePort" binding="tns:BookingServiceBinding">
+            <soap:address location="http://localhost:3000/soap/booking"/>
+        </port>
+    </service>
+
+</definitions>
